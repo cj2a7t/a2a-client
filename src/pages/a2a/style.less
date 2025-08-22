@@ -1,0 +1,151 @@
+.a2a-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 36px); // Subtract HeaderTab height
+    background: #f5f5f5;
+    position: relative;
+
+    .tab-loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #1890ff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            .loading-text {
+                font-size: 14px;
+                color: #666;
+                font-weight: 500;
+            }
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+
+
+
+
+
+
+    .config-modal {
+        .ant-modal-body {
+            padding: 24px;
+        }
+
+        .form-item {
+            margin-bottom: 20px;
+
+            .ant-form-item-label {
+                font-weight: 500;
+                color: #262626;
+            }
+
+            .ant-input,
+            .ant-switch {
+                margin-top: 4px;
+            }
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+    }
+
+
+}
+
+/* 流式传输指示器动画 */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Markdown 内容样式 */
+.markdown-content {
+    .markdown-content {
+        line-height: 1.6;
+        
+        /* 代码块样式增强 */
+        pre {
+            margin: 16px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 行内代码样式增强 */
+        code {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+        
+        /* 表格样式增强 */
+        table {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        /* 引用样式增强 */
+        blockquote {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 链接悬停效果 */
+        a:hover {
+            border-bottom-color: #0366d6;
+        }
+    }
+}
+
+/* 流式传输状态指示器 */
+.streaming-indicator {
+    animation: pulse 1.5s infinite;
+}
+
+/* 全局覆盖ant-popover-inner的padding */
+.ant-popover-inner,
+.ant-popover .ant-popover-inner,
+.ant-popover-inner-content,
+.a2a-server-popover .ant-popover-inner,
+.a2a-server-popover .ant-popover-inner-content,
+.a2a-server-popover .ant-popover-content {
+    padding: 0 !important;
+}

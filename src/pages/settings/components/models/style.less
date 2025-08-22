@@ -1,0 +1,252 @@
+.models-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    
+    .models-layout {
+        display: flex;
+        height: 100%;
+        background: #fafafa;
+        
+        // 左侧提供商列表
+        .providers-sidebar {
+            width: 240px;
+            background: #fff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            
+            .providers-list {
+                flex: 1;
+                padding: 8px 0;
+                
+                .provider-item {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 8px 12px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    margin: 0 8px;
+                    border-radius: 6px;
+                    
+                    &:hover {
+                        background: #f9fafb;
+                    }
+                    
+                    &.selected {
+                        background: #eff6ff;
+                        border-right: none;
+                        
+                        .provider-name {
+                            color: #3b82f6;
+                            font-weight: 600;
+                        }
+                    }
+                    
+                    &.coming-soon {
+                        cursor: not-allowed;
+                        opacity: 0.6;
+                        
+                        &:hover {
+                            background: transparent;
+                        }
+                        
+                        .provider-name {
+                            color: #6b7280;
+                        }
+                    }
+                    
+                    .provider-info {
+                        display: flex;
+                        align-items: center;
+                        flex: 1;
+                        
+                        .provider-icon {
+                            width: 20px;
+                            height: 20px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 8px;
+                            
+                            .provider-logo {
+                                width: 100%;
+                                height: 100%;
+                                object-fit: contain;
+                            }
+                        }
+                        
+                        .provider-name {
+                            font-size: 12px;
+                            color: #374151;
+                            font-weight: 500;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                            
+                            .coming-soon-badge {
+                                font-size: 9px;
+                                color: #f59e0b;
+                                background: #fef3c7;
+                                padding: 1px 4px;
+                                border-radius: 3px;
+                                font-weight: 500;
+                            }
+                        }
+                    }
+                    
+                    .ant-switch {
+                        &.ant-switch-checked {
+                            background-color: #3b82f6;
+                        }
+                    }
+                    
+                    .coming-soon-switch {
+                        font-size: 9px;
+                        color: #f59e0b;
+                        background: #fef3c7;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        font-weight: 500;
+                    }
+                }
+            }
+        }
+        
+        // 右侧详细配置
+        .provider-details {
+            flex: 1;
+            padding: 16px;
+            background: #fff;
+            overflow-y: auto;
+            
+            .coming-soon-content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 200px;
+                
+                .coming-soon-message {
+                    text-align: center;
+                    max-width: 300px;
+                    
+                    .message-icon {
+                        font-size: 48px;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .message-text {
+                        h3 {
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: #1f2937;
+                            margin: 0 0 8px 0;
+                        }
+                        
+                        p {
+                            font-size: 12px;
+                            color: #6b7280;
+                            margin: 0;
+                            line-height: 1.5;
+                        }
+                    }
+                }
+            }
+            
+            .config-section {
+                margin-bottom: 20px;
+                
+                .section-title {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #374151;
+                    margin-bottom: 8px;
+                }
+                
+                .config-input {
+                    margin-bottom: 6px;
+                    
+                    .ant-input {
+                        font-size: 12px;
+                    }
+                }
+                
+                .api-example {
+                    font-size: 11px;
+                    color: #6b7280;
+                    margin-bottom: 12px;
+                }
+                
+                .key-actions {
+                    margin-bottom: 8px;
+                    
+                    .ant-btn {
+                        font-size: 11px;
+                        height: 24px;
+                        padding: 0 8px;
+                    }
+                }
+                
+                .key-help {
+                    font-size: 11px;
+                    color: #6b7280;
+                    
+                    .provider-link {
+                        color: #3b82f6;
+                        text-decoration: none;
+                        
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+            
+            .save-section {
+                margin-top: 24px;
+                padding-top: 16px;
+                border-top: 1px solid #e5e7eb;
+                
+                .save-button {
+                    font-size: 11px;
+                    height: 24px;
+                    padding: 0 12px;
+                    font-weight: 500;
+                    
+                    .anticon {
+                        margin-right: 4px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .models-container {
+        .models-layout {
+            flex-direction: column;
+            
+            .providers-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+                
+                .providers-list {
+                    .provider-item {
+                        &.selected {
+                            border-right: none;
+                            border-bottom: 2px solid #3b82f6;
+                        }
+                    }
+                }
+            }
+            
+            .provider-details {
+                padding: 12px;
+            }
+        }
+    }
+} 

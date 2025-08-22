@@ -1,0 +1,382 @@
+.agents-container {
+    height: 100%;
+    font-size: 12px;
+
+    .agents-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 24px;
+        height: auto;
+        line-height: normal;
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 16px 0;
+
+            .header-title {
+                h4 {
+                    margin-bottom: 8px !important;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #1f2937;
+                }
+
+                .ant-typography {
+                    font-size: 12px;
+                    color: #6b7280;
+                }
+            }
+
+            .add-button {
+                font-size: 11px;
+                height: 24px;
+                padding: 0 12px;
+                font-weight: 500;
+                margin-bottom: 4px;
+
+                .anticon {
+                    margin-right: 4px;
+                }
+            }
+        }
+    }
+
+    .agents-content {
+        position: relative;
+        padding: 8px 24px 48px 24px;
+        overflow-y: auto;
+        background: #ffffff;
+
+        .agents-table {
+            .ant-table-thead>tr>th {
+                background: #fafafa;
+                border-bottom: 1px solid #e5e7eb;
+                font-size: 12px;
+                font-weight: 600;
+                color: #374151;
+                padding: 8px 12px;
+            }
+
+            .ant-table-tbody>tr>td {
+                padding: 8px 12px;
+                border-bottom: 1px solid #f0f0f0;
+                font-size: 12px;
+            }
+
+            .ant-table-tbody>tr:hover>td {
+                background-color: #fafafa;
+            }
+
+            .ant-table-expanded-row {
+                background: #fafafa;
+            }
+
+            .ant-table-row-expand-icon {
+                width: 16px;
+                height: 16px;
+                font-size: 12px;
+            }
+
+            // Monaco 编辑器滚动条样式
+            .monaco-editor {
+                .scrollbar {
+                    width: 6px !important;
+                }
+
+                .slider {
+                    width: 6px !important;
+                }
+
+                .scrollbar .slider {
+                    width: 6px !important;
+                }
+
+                .monaco-scrollable-element .scrollbar {
+                    width: 6px !important;
+                }
+
+                .monaco-scrollable-element .slider {
+                    width: 6px !important;
+                }
+            }
+        }
+
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            background: #fafafa;
+            margin: 20px 0;
+
+            .loading-content {
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+
+                .ant-typography {
+                    font-size: 14px;
+                    color: #6b7280;
+                    display: inline;
+                    font-weight: 500;
+                }
+            }
+        }
+
+        .empty-state {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            min-height: 300px !important;
+            height: 300px !important;
+            border: 2px dashed #e5e7eb !important;
+            border-radius: 12px !important;
+            background: #fafafa !important;
+            margin: 20px 0 !important;
+            transition: all 0.3s ease !important;
+
+            &:hover {
+                border-color: #d1d5db;
+                background: #f9fafb;
+            }
+
+            .empty-content {
+                text-align: center;
+                padding: 40px 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+
+                .ant-typography {
+                    font-size: 14px;
+                    color: #6b7280;
+                    margin-bottom: 20px;
+                    display: block;
+                    font-weight: 500;
+                }
+
+                .ant-btn {
+                    font-size: 13px;
+                    height: 32px;
+                    padding: 0 20px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+
+                    .anticon {
+                        font-size: 14px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        line-height: 1;
+                        margin: 0;
+                    }
+
+                    &:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Modal styling
+.agents-container .ant-modal {
+    .ant-modal-header {
+        .ant-modal-title {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+        }
+    }
+
+    .ant-modal-body {
+        .ant-form {
+            .ant-form-item {
+                margin-bottom: 16px;
+
+                .ant-form-item-label {
+                    label {
+                        font-size: 12px;
+                        font-weight: 500;
+                        color: #374151;
+                    }
+                }
+
+                .ant-input,
+                .ant-input-textarea {
+                    font-size: 12px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 6px;
+
+                    &:hover {
+                        border-color: #9ca3af;
+                    }
+
+                    &:focus,
+                    &.ant-input-focused {
+                        border-color: #3b82f6;
+                        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+                    }
+                }
+            }
+        }
+    }
+
+    .ant-modal-footer {
+        .ant-btn {
+            font-size: 12px;
+            height: 32px;
+            padding: 0 16px;
+        }
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .agents-container {
+        .agents-header {
+            padding: 0 16px;
+
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
+
+        .agents-content {
+            padding: 16px;
+        }
+    }
+}
+
+// Loading 覆盖层样式
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+
+    .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+
+        .ant-spin {
+            .ant-spin-dot {
+                font-size: 32px;
+            }
+        }
+
+        .ant-typography {
+            color: #6b7280;
+            font-weight: 500;
+        }
+    }
+}
+
+// Popconfirm 组件样式 - 使用最高优先级
+.agents-container {
+    .ant-popconfirm {
+        .ant-popconfirm-inner {
+            padding: 12px !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .ant-popconfirm-inner-content {
+            padding: 12px !important;
+        }
+
+        .ant-popconfirm-title {
+            margin-bottom: 6px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+        }
+
+        .ant-popconfirm-description {
+            margin-bottom: 12px !important;
+            font-size: 12px !important;
+            color: #6b7280 !important;
+            line-height: 1.4 !important;
+        }
+
+        .ant-popconfirm-buttons {
+            display: flex !important;
+            gap: 6px !important;
+            justify-content: flex-end !important;
+
+            .ant-btn {
+                font-size: 12px !important;
+                height: 24px !important;
+                padding: 0 10px !important;
+                border-radius: 4px !important;
+            }
+        }
+    }
+}
+
+.ant-popconfirm {
+    .ant-popconfirm-inner {
+        padding: 12px !important;
+        border-radius: 6px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .ant-popconfirm-inner-content {
+        padding: 12px !important;
+    }
+
+    .ant-popconfirm-title {
+        margin-bottom: 6px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #1f2937 !important;
+    }
+
+    .ant-popconfirm-description {
+        margin-bottom: 12px !important;
+        font-size: 12px !important;
+        color: #6b7280 !important;
+        line-height: 1.4 !important;
+    }
+
+    .ant-popconfirm-buttons {
+        display: flex !important;
+        gap: 6px !important;
+        justify-content: flex-end !important;
+
+        .ant-btn {
+            font-size: 12px !important;
+            height: 24px !important;
+            padding: 0 10px !important;
+            border-radius: 4px !important;
+        }
+    }
+}

@@ -1,0 +1,102 @@
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.8);
+    cursor: default;
+
+    -moz-user-select: none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.ant-form-item-label > label {
+    font-size: 12px !important;
+}
+
+.ant-input {
+    font-size: 12px !important;
+}
+
+.ant-select-selector {
+    font-size: 12px !important;
+}
+
+.ant-select-item-option-content {
+    font-size: 12px !important;
+}
+
+.ant-tree-iconEle {
+    width: 16px !important;
+    margin-right: 2px !important;
+}
+
+.ant-tree-checkbox {
+    margin-right: 2px !important;
+}
+
+.ant-tree-title {
+    font-size: 12px !important;
+}
+
+.ant-tree-iconEle > * {
+    font-size: 14px;
+}
+.no-hover-bg {
+    background-color: transparent !important;
+}
+.no-hover-bg:hover {
+    background-color: transparent !important;
+}
+
+.ant-table {
+    font-size: 12px !important;
+}
+
+.ant-table-expanded-row .ant-table {
+    font-size: 12px !important;
+}
+
+.custom-layout {
+    background: white !important;
+}
+
+.ant-message .ant-message-notice-content {
+    font-size: 11px;
+}
+
+// Settings button styles
+.settings-btn {
+    z-index: 20;
+    flex-shrink: 0 !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    margin-right: 0 !important; // 完全贴在右边
+    margin-bottom: 0 !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    border: none !important;
+    border-radius: 6px 6px 0 0 !important;
+    background: transparent !important; // 去掉背景
+    opacity: 0.8;
+    transition: all 0.15s ease !important;
+    pointer-events: auto !important;
+    transform: translateY(1px);
+
+    &:hover {
+        color: #374151 !important;
+        background: rgba(255, 255, 255, 0.1) !important; // 悬停时轻微背景
+        border: none !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+        transform: translateY(0px) scale(1.05) !important;
+        opacity: 1 !important;
+    }
+
+    &:active {
+        border: none !important;
+        transform: translateY(0px) scale(0.95) !important;
+    }
+}

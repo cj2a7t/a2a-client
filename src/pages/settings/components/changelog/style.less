@@ -1,0 +1,56 @@
+.changelog-settings {
+    padding: 24px;
+    height: 100%;
+    overflow-y: auto;
+
+    .changelog-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .changelog-content {
+        .changelog-entry {
+            margin-bottom: 24px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            .changelog-entry-header {
+                margin-bottom: 8px;
+
+                .ant-tag {
+                    font-size: 11px;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-weight: 500;
+                }
+            }
+
+            .ant-typography {
+                &.ant-typography-h4 {
+                    color: #1890ff;
+                    font-weight: 600;
+                }
+
+                &.ant-typography-h5 {
+                    color: #262626;
+                    font-weight: 500;
+                }
+            }
+
+            .ant-divider {
+                border-color: #f0f0f0;
+                margin: 16px 0;
+            }
+        }
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .changelog-settings {
+        padding: 16px;
+    }
+} 

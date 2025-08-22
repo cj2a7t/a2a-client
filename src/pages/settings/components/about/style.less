@@ -1,0 +1,92 @@
+.about-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
+    padding: 40px 20px;
+    background: #ffffff;
+}
+
+.about-content {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+// App Name
+.app-name {
+    margin-bottom: 8px !important;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 28px;
+}
+
+// Version
+.version {
+    display: block;
+    margin-bottom: 24px;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+// Slogan
+.slogan {
+    margin-bottom: 32px !important;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+// Links
+.links {
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    
+    .link {
+        color: #3b82f6;
+        cursor: pointer;
+        font-size: 13px;
+        transition: color 0.2s ease;
+        
+        &:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+    }
+}
+
+
+
+// Responsive design
+@media (max-width: 480px) {
+    .about-container {
+        padding: 20px 16px;
+    }
+    
+    .about-content {
+        max-width: 100%;
+    }
+    
+
+    
+    .app-name {
+        font-size: 24px;
+    }
+    
+    .links {
+        gap: 16px;
+        
+        .link {
+            font-size: 12px;
+        }
+    }
+    
+
+} 
