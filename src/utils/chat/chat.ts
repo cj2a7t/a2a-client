@@ -7,7 +7,7 @@ import { isEmpty } from "lodash";
 import { createA2AClient } from "../a2aClient";
 import { parseToMap, toPrettyJsonString } from "../json";
 import { toExtractJsonString, toJsonStringWithPrefix, toXmlStringWithPrefix } from "../markdown";
-import { createStreamingChatHandler } from "../streamingChat";
+import { tauriEventListener } from "../TauriEventListener";
 import { XmlUtils } from "../xml";
 
 export class ChatUtil {
@@ -41,7 +41,7 @@ export class ChatUtil {
             // direct call llm, unuse a2a function
             if (this.forceLLM) {
                 // call llm
-                this.callLLM(model.apiKey, "", userPrompt, true, this.onChunk);
+                await this.callLLM(model.apiKey, "", userPrompt, true, this.onChunk);
                 return;
             }
 
@@ -111,17 +111,20 @@ export class ChatUtil {
                 return await invokeChatCompletion(systemPrompt, userPrompt, apiKey);
             }
 
-            if (onChunk) {
-                // Create Promise and set callbacks
-                const streamingPromise = new Promise<string>((resolve, reject) => {
-                    let timeoutId: NodeJS.Timeout | null = null;
+            if (!onChunk) {
+                throw new Error("onChunk is not defined");
+            }
 
+            // Create Promise and set callbacks
+            const streamingPromise = new Promise<string>((resolve, reject) => {
+                try {
+                    let timeoutId: NodeJS.Timeout | null = null;
                     const clearTimeoutAndResolve = (result: string) => {
                         if (timeoutId) {
                             clearTimeout(timeoutId);
                             timeoutId = null;
                         }
-                        console.log('Streaming completed in callDeepSeekLLM, resolving promise');
+                        console.log('Streaming completed in callLLM, resolving promise');
                         resolve(result);
                     };
 
@@ -130,16 +133,16 @@ export class ChatUtil {
                             clearTimeout(timeoutId);
                             timeoutId = null;
                         }
-                        console.error('Streaming error in callDeepSeekLLM, rejecting promise');
+                        console.error('Streaming error in callLLM, rejecting promise');
                         reject(error);
                     };
 
-                    // Define callbacks directly when creating
-                    const handler = createStreamingChatHandler(
-                        (chunk) => {
+                    // Use chat stream listener
+                    tauriEventListener.startListening('chat_stream_chunk', {
+                        onChunk: (chunk: string) => {
                             onChunk(chunk);
                         },
-                        (fullContent) => {
+                        onComplete: (fullContent: string) => {
                             console.log('Full content length:', fullContent.length);
                             if (onComplete) {
                                 onComplete(fullContent);
@@ -147,108 +150,41 @@ export class ChatUtil {
                             clearTimeoutAndResolve(fullContent);
                             console.log('Promise resolved successfully');
                         },
-                        (error) => {
-                            console.error('Streaming error in callDeepSee, rejecting promise');
+                        onError: (error: string) => {
+                            console.error('Streaming error in callLLM, rejecting promise');
                             clearTimeoutAndReject(new Error(error));
                         },
-                        (status, message) => {
+                        onStatus: (status: string, message: string) => {
                             console.log(`Streaming status: ${status} - ${message}`);
                         }
-                    );
-
-                    console.log('StreamingChatHandler created with callbacks:', {
-                        hasOnChunk: !!handler['onChunk'],
-                        hasOnComplete: !!handler['onComplete'],
-                        hasOnError: !!handler['onError'],
-                        hasOnStatus: !!handler['onStatus']
-                    });
-
-                    // Start listening
-                    handler.startListening().then(() => {
-                        console.log('Streaming listener started');
-                    }).catch(err => {
-                        console.error('Failed to start streaming listener:', err);
-                        clearTimeoutAndReject(new Error('Failed to start streaming listener'));
+                    }).then(() => {
+                        console.log('Global event listener started');
+                    }).catch((err: any) => {
+                        console.error('Failed to start global event listener:', err);
+                        clearTimeoutAndReject(new Error('Failed to start global event listener'));
                     });
 
                     // Set timeout
                     timeoutId = setTimeout(() => {
-                        console.warn('Streaming timeout in callDeepSeekLLM');
+                        console.warn('Streaming timeout in callLLM');
                         clearTimeoutAndReject(new Error('Streaming timeout'));
                     }, 5 * 60 * 1000);
 
                     // Start streaming API
-                    invokeStreamChat(
-                        systemPrompt,
-                        userPrompt,
-                        apiKey
-                    ).catch(err => {
-                        console.error('Failed to start streaming API:', err);
-                        clearTimeoutAndReject(new Error('Failed to start streaming API'));
-                    });
-                });
-
-                return streamingPromise;
-            } else {
-                // Create Promise and set callbacks
-                const streamingPromise = new Promise<string>((resolve, reject) => {
-                    let timeoutId: NodeJS.Timeout | null = null;
-
-                    const clearTimeoutAndResolve = (result: string) => {
-                        if (timeoutId) {
-                            clearTimeout(timeoutId);
-                            timeoutId = null;
-                        }
-                        console.log('Streaming completed in fallback version, resolving promise');
-                        resolve(result);
-                    };
-
-                    const clearTimeoutAndReject = (error: Error) => {
-                        if (timeoutId) {
-                            clearTimeout(timeoutId);
-                            timeoutId = null;
-                        }
-                        console.error('Streaming error in fallback version, rejecting promise');
-                        reject(error);
-                    };
-
-                    // Define callbacks directly when creating
-                    const handler = createStreamingChatHandler(
-                        undefined, // onChunk
-                        (fullContent) => {
-                            console.log('Streaming completed in fallback version, resolving promise');
-                            clearTimeoutAndResolve(fullContent);
-                        },
-                        (error) => {
-                            console.error('Streaming error in fallback version, rejecting promise');
-                            clearTimeoutAndReject(new Error(error));
-                        }
-                    );
-
-                    // Start listening
-                    handler.startListening().then(() => {
-                        console.log('Streaming listener started (fallback)');
-                    }).catch(err => {
-                        clearTimeoutAndReject(new Error('Failed to start streaming listener'));
-                    });
-
-                    // Set timeout
-                    timeoutId = setTimeout(() => {
-                        clearTimeoutAndReject(new Error('Streaming timeout'));
-                    }, 60000);
-
-                    // Start streaming API
-                    invokeStreamChat(
-                        systemPrompt,
-                        userPrompt,
-                        apiKey
-                    ).catch(err => {
-                        clearTimeoutAndReject(new Error('Failed to start streaming API'));
-                    });
-                });
-
-                return streamingPromise;
-            }
+                    invokeStreamChat(systemPrompt, userPrompt, apiKey)
+                        .then(result => {
+                            console.log('Streaming API started successfully:', result);
+                        })
+                        .catch(err => {
+                            console.log("invokeStreamChat err: ", err);
+                            clearTimeoutAndReject(err);
+                        });
+                } catch (error) {
+                    console.error('Failed to call streaming:', error);
+                    throw error;
+                }
+            });
+            return streamingPromise;
         } catch (error) {
             console.error('Failed to call LLM:', error);
             throw error;

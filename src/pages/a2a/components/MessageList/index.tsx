@@ -21,6 +21,16 @@ const MessageList: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const handleCopyMessage = useCallback(async (content: string) => {
+        try {
+            await navigator.clipboard.writeText(content);
+            message.success('Copy successful');
+        } catch (error) {
+            console.error('Failed to copy message:', error);
+            message.error('Copy failed');
+        }
+    }, []);
+
     useEffect(() => {
         scrollToBottom();
     }, [messageList]);
@@ -35,16 +45,6 @@ const MessageList: React.FC = () => {
             </div>
         );
     }
-
-    const handleCopyMessage = useCallback(async (content: string) => {
-        try {
-            await navigator.clipboard.writeText(content);
-            message.success('Copy successful');
-        } catch (error) {
-            console.error('Failed to copy message:', error);
-            message.error('Copy failed');
-        }
-    }, []);
 
     return (
         <div className="messages-container">

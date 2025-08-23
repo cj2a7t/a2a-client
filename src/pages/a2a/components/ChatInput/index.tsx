@@ -4,7 +4,7 @@ import { useTabKey } from '@/utils/tabkey';
 import { DeleteOutlined, MessageOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Button, Mentions } from 'antd';
 import { debounce, isEmpty } from 'lodash';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import A2AServerSelector from '../A2AServerSelector';
 import './style.less';
 
@@ -34,6 +34,7 @@ const ChatInput: React.FC = () => {
 
     const tabKey = useTabKey();
     const [store] = useFlatInject("chat");
+    const [isSending, setIsSending] = useState(false);
     const {
         mapChat,
         onUpdateUserMessage,
@@ -61,21 +62,30 @@ const ChatInput: React.FC = () => {
     }, [tabKey, onUpdateAIMessage]);
 
     const onSend = async () => {
-        await onPushUserMessage(tabKey, userMessage);
-        await onInitAIMessage(tabKey, "🤔 Thinking...");
+        if (isSending || isEmpty(userMessage)) {
+            return;
+        }
 
-        const chunks: string[] = [];
-        const debouncedUpdate = getDebouncedUpdate();
-        const chatUtil = await createDyncmicChat((respChunk) => {
-            chunks.push(respChunk);
-            // O(n)
-            debouncedUpdate(chunks.join(''));
-        });
+        setIsSending(true);
         try {
-            chatUtil.sendMessage(userMessage);
+            await onPushUserMessage(tabKey, userMessage);
+            await onInitAIMessage(tabKey, "🤔 Thinking...");
+
+            const chunks: string[] = [];
+            const debouncedUpdate = getDebouncedUpdate();
+            const chatUtil = await createDyncmicChat((respChunk) => {
+                chunks.push(respChunk);
+                // O(n)
+                debouncedUpdate(chunks.join(''));
+            });
+            try {
+                chatUtil.sendMessage(userMessage);
+            } finally {
+                debouncedUpdate.flush();
+                onResetUserMessage(tabKey);
+            }
         } finally {
-            debouncedUpdate.flush();
-            onResetUserMessage(tabKey);
+            setIsSending(false);
         }
     };
 
@@ -111,6 +121,7 @@ const ChatInput: React.FC = () => {
                     onPressEnter={handleKeyPress}
                     spellCheck={false}
                     autoCapitalize="off"
+                    disabled={isSending}
                 />
             </div>
             <div className="bottom-actions">
@@ -122,7 +133,7 @@ const ChatInput: React.FC = () => {
                         type="text"
                         icon={<DeleteOutlined />}
                         onClick={() => onClearMessages(tabKey)}
-                        disabled={!userMessage.trim()}
+                        disabled={!userMessage.trim() || isSending}
                         className="clear-btn"
                         title="Clear all messages"
                     />
@@ -130,8 +141,8 @@ const ChatInput: React.FC = () => {
                         type="primary"
                         icon={<SendOutlined />}
                         onClick={onSend}
-                        disabled={isEmpty(userMessage)}
-                        loading={false}
+                        disabled={isEmpty(userMessage) || isSending}
+                        loading={isSending}
                         className="send-btn"
                         title="Send message"
                     />

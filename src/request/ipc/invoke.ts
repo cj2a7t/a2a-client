@@ -1,37 +1,7 @@
-import { DynmcpConnection, InvokeResult } from "@/types/connection";
+import { InvokeResult } from "@/types/invoke";
 import { AgentCard } from "@a2a-js/sdk";
 import { invoke } from "@tauri-apps/api/core";
 
-export const invokeSaveConnection = async (
-    con: DynmcpConnection
-): Promise<number> => {
-    const payload = {
-        ...con,
-        starred: con.starred ?? false,
-    };
-
-    const res: InvokeResult<number> = await invoke("save_dynmcp_connection", {
-        conn: payload,
-    });
-
-    console.log("invokeSaveConnection res: ", res);
-
-    if (res.code === 0 && res.data !== undefined) {
-        return res.data;
-    } else {
-        throw new Error(res.message || "Unknown error while saving connection");
-    }
-};
-
-export const invokeQryConnection = async (): Promise<DynmcpConnection[]> => {
-    const res: InvokeResult<DynmcpConnection[]> = await invoke("query_all");
-    console.log("invokeQryConnection res: ", res);
-    if (res.code === 0 && res.data !== undefined) {
-        return res.data;
-    } else {
-        throw new Error(res.message || "Unknown error while saving connection");
-    }
-};
 
 export const invokeChatCompletion = async (
     systemPrompt: string,
@@ -110,7 +80,7 @@ export const invokeStreamChat = async (
     maxTokens?: number,
     temperature?: number
 ): Promise<void> => {
-    await invoke("stream_chat", {
+    const res: InvokeResult<string> = await invoke("stream_chat", {
         params: {
             system_prompt: systemPrompt,
             user_prompt: userPrompt,
@@ -119,6 +89,12 @@ export const invokeStreamChat = async (
             temperature: temperature,
         }
     });
+
+    console.log("invokeStreamChat res: ", res);
+
+    if (res.code !== 0) {
+        throw new Error(res.message || "Unknown error while calling streaming chat");
+    }
 };
 
 
