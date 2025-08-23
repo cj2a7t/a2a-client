@@ -1,4 +1,6 @@
 import { Message } from '@/types/a2a';
+import { formatTime } from '@/utils/date';
+import { shouldRenderAsMarkdown } from '@/utils/markdown';
 import { CopyOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Flex, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -18,23 +20,8 @@ interface MessageItemProps {
 const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
     const [thinkingEmoji, setThinkingEmoji] = useState('🤔');
 
-    const formatTime = (date: Date) => {
-        const timeStr = date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        const dateStr = date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
-        return `${dateStr} ${timeStr}`;
-    };
-
-    // Check if this is a thinking message
+    // thinking and use emoji animation
     const isThinking = message.content === '🤔 Thinking...';
-
-    // Thinking emoji animation effect
     useEffect(() => {
         if (isThinking) {
             const emojis = ['🤔', '🤨', '🧐', '🤓', '🤯', '💭', '💡', '🎯', '🔍', '⚡'];
@@ -43,42 +30,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
             const interval = setInterval(() => {
                 setThinkingEmoji(emojis[currentIndex]);
                 currentIndex = (currentIndex + 1) % emojis.length;
-            }, 800); // Change emoji every 800ms
+            }, 800);
 
             return () => clearInterval(interval);
         }
     }, [isThinking]);
-
-    // Determine if message content should be rendered as markdown
-    const shouldRenderAsMarkdown = (content: string): boolean => {
-        // Check if it's a direct model call result
-        if (content.includes('✅ Direct model call completed!') ||
-            content.includes('📝 Note: This was a direct model call since no agent was configured.')) {
-            return true;
-        }
-
-        // Check if content contains markdown format
-        const markdownPatterns = [
-            /^#+\s/,           // Headings
-            /\*\*.*\*\*/,      // Bold
-            /\*.*\*/,          // Italic
-            /`.*`/,            // Inline code
-            /```[\s\S]*```/,   // Code blocks
-            /\[.*\]\(.*\)/,    // Links
-            /^\s*[-*+]\s/,     // Lists
-            /^\s*\d+\.\s/,     // Ordered lists
-            />\s/,             // Quotes
-        ];
-
-        // Enhanced HTML pattern detection for details, summary, and other HTML tags
-        const htmlPattern = /<\/?[a-z][\s\S]*>/i;
-        const hasHtmlTags = htmlPattern.test(content);
-
-        // Specific check for details/summary tags
-        const hasDetailsTags = /<\/?details/i.test(content) || /<\/?summary/i.test(content);
-
-        return markdownPatterns.some(pattern => pattern.test(content)) || hasHtmlTags || hasDetailsTags;
-    };
 
     if (message.type === 'user') {
         return (

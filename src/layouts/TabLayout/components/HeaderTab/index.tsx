@@ -32,7 +32,7 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
     const [items, setItems] = useState<TabItem[]>([]);
     const [activeKey, setActiveKey] = useState("");
     const location = useLocation();
-    const [a2aStore] = useFlatInject("a2a");
+    const [chatStore] = useFlatInject("chat");
 
     const canRemoveTab = items.length > MIN_TABS;
     const canAddTab = items.length < MAX_TABS;
@@ -135,20 +135,14 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
 
     const switchTab = async (tabKey: string) => {
         // Set loading state for the new tab
-        await a2aStore.setTabLoading(tabKey, true);
-
+        await chatStore.onSetTabLoading(tabKey, true);
         setActiveKey(tabKey);
         const matchItem = items.find((item) => item.key === tabKey);
         if (matchItem?.path) {
             nav(matchItem.path);
         }
-
-        // Wait for navigation to complete before clearing loading
         setTimeout(async () => {
-            // Double check if we're still on the same tab
-            if (activeKey === tabKey) {
-                await a2aStore.setTabLoading(tabKey, false);
-            }
+            await chatStore.onSetTabLoading(tabKey, false);
         }, 800);
     };
 
@@ -169,13 +163,7 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
         setActiveKey(newKey);
 
         // Set loading state for the new tab
-        await a2aStore.setTabLoading(newKey, true);
         nav(newTab.path);
-
-        // Clear loading state after a short delay
-        setTimeout(async () => {
-            await a2aStore.setTabLoading(newKey, false);
-        }, 500);
     };
 
     const removeTab = (tabKey: string, e: React.MouseEvent) => {

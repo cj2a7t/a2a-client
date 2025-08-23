@@ -1,13 +1,13 @@
 import { Message } from "@/types/a2a";
-import { TabKeyType } from "@/types/tab";
+import { TabData, TabKeyType } from "@/types/tab";
 import { NaturFactory } from "@/utils/NaturFactory";
-import { TabData } from "./tabdata";
 import { v4 as uuidv4 } from "uuid";
 
 const getDefaultTabData = () => ({
     messageList: [],
     userMessage: "",
     lastAIMessageId: "",
+    isTabLoading: false,
 });
 
 const initState = {
@@ -17,6 +17,7 @@ const initState = {
         messageList: Message[];
         userMessage: string;
         lastAIMessageId: string;
+        isTabLoading: boolean;
     }>,
 };
 
@@ -105,6 +106,16 @@ const actions = NaturFactory.actionsCreator(state)({
             }
             s.tabChat.tabData[realKey].messageList = [];
         });
+    },
+    onSetTabLoading: (tabKey: TabKeyType, isTabLoading: boolean) => async (api) => {
+        const realKey = tabKey ?? "default";
+        api.setState((s: State) => {
+            if (!s.tabChat.tabData[realKey]) {
+                s.tabChat.tabData[realKey] = getDefaultTabData();
+            }
+            console.log("onSetTabLoading ==>>", realKey, isTabLoading);
+            s.tabChat.tabData[realKey].isTabLoading = isTabLoading;
+        });
     }
 });
 
@@ -126,6 +137,7 @@ export const maps = {
                     messageList: res.messageList || [],
                     userMessage: res.userMessage || "",
                     lastAIMessageId: res.lastAIMessageId || "",
+                    isTabLoading: res.isTabLoading || false,
                 };
             };
         }

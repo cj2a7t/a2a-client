@@ -1,54 +1,19 @@
-import React, { useEffect } from 'react';
-import { useTabKey } from "@/utils/tabkey";
-import { useChatLogic } from './hooks';
-import { MessageList, ChatInput } from './components';
 import { useFlatInject } from '@/utils/hooks';
+import { useTabKey } from '@/utils/tabkey';
+import React from 'react';
+import { ChatInput, MessageList } from './components';
 import "./style.less";
 
 const A2APage: React.FC = () => {
+
     const tabKey = useTabKey();
-    const [store] = useFlatInject("a2a");
-
-    const {
-        chatData,
-        handleSendMessage,
-        handleCopyMessage,
-        handleClearMessages,
-        setInputValue,
-    } = useChatLogic();
-
-    useEffect(() => {
-        if (tabKey && chatData.isTabLoading) {
-            const timer = setTimeout(() => {
-                store.setTabLoading(tabKey, false);
-            }, 300);
-            return () => clearTimeout(timer);
-        }
-    }, [tabKey, chatData.isTabLoading, store]);
-
-    useEffect(() => {
-        if (tabKey && chatData.servers && chatData.servers.length === 0) {
-            store.addServer(tabKey, {
-                id: 'server-1',
-                name: 'Local A2A Server',
-                url: 'http://localhost:8080'
-            });
-            store.addServer(tabKey, {
-                id: 'server-2',
-                name: 'Production A2A',
-                url: 'https://a2a.example.com'
-            });
-            store.addServer(tabKey, {
-                id: 'server-3',
-                name: 'Test Environment',
-                url: 'https://test-a2a.example.com'
-            });
-        }
-    }, [tabKey, chatData.servers, store]);
+    const [store] = useFlatInject("chat");
+    const { mapChat } = store;
+    const { isTabLoading } = mapChat(tabKey);
 
     return (
         <div className="a2a-container">
-            {chatData.isTabLoading && (
+            {isTabLoading && (
                 <div className="tab-loading-overlay">
                     <div className="loading-spinner">
                         <div className="spinner"></div>
@@ -56,11 +21,7 @@ const A2APage: React.FC = () => {
                     </div>
                 </div>
             )}
-
-            <MessageList
-                messages={chatData.messages}
-                onCopyMessage={handleCopyMessage}
-            />
+            <MessageList />
             <ChatInput />
         </div>
     );

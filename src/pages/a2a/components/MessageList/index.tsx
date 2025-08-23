@@ -1,25 +1,22 @@
-import React, { useRef, useEffect } from 'react';
-import { Typography } from 'antd';
-import { RobotOutlined } from '@ant-design/icons';
+import rustA2AIcon from '@/assets/rust_a2a.png';
 import { Message } from '@/types/a2a';
+import { useFlatInject } from '@/utils/hooks';
+import { useTabKey } from '@/utils/tabkey';
+import { message, Typography } from 'antd';
+import React, { useCallback, useEffect, useRef } from 'react';
 import MessageItem from '../MessageItem';
 import './style.less';
-import { useTabKey } from '@/utils/tabkey';
-import { useFlatInject } from '@/utils/hooks';
 
 const { Text } = Typography;
 
-interface MessageListProps {
-    onCopyMessage: (content: string) => void;
-}
-
-const MessageList: React.FC<MessageListProps> = ({ onCopyMessage }) => {
+const MessageList: React.FC = () => {
     const tabKey = useTabKey();
     const [store] = useFlatInject("chat");
     const { mapChat } = store;
     const { messageList } = mapChat(tabKey);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // smooth scroll to bottom when new message is added
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -31,13 +28,23 @@ const MessageList: React.FC<MessageListProps> = ({ onCopyMessage }) => {
     if (messageList.length === 0) {
         return (
             <div className="empty-state">
-                <RobotOutlined />
+                <img src={rustA2AIcon} alt="Rust A2A" className="rust-a2a-icon" />
                 <Text type="secondary">
-                    Start chatting with A2A Client!
+                    Welcome to A2A Client UI
                 </Text>
             </div>
         );
     }
+
+    const handleCopyMessage = useCallback(async (content: string) => {
+        try {
+            await navigator.clipboard.writeText(content);
+            message.success('Copy successful');
+        } catch (error) {
+            console.error('Failed to copy message:', error);
+            message.error('Copy failed');
+        }
+    }, []);
 
     return (
         <div className="messages-container">
@@ -45,7 +52,7 @@ const MessageList: React.FC<MessageListProps> = ({ onCopyMessage }) => {
                 <MessageItem
                     key={message.id}
                     message={message}
-                    onCopy={onCopyMessage}
+                    onCopy={handleCopyMessage}
                 />
             ))}
             <div ref={messagesEndRef} />

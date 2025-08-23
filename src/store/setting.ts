@@ -1,9 +1,9 @@
-import { getAllSettingModels, toggleSettingModelEnabled, saveSettingModel, updateSettingModel } from "@/request/ipc/invokeSettingModel";
-import { getAllSettingA2AServers, toggleSettingA2AServerEnabled, saveSettingA2AServer, updateSettingA2AServer, deleteSettingA2AServer } from "@/request/ipc/invokeSettingA2A";
+import { deleteSettingA2AServer, getAllSettingA2AServers, saveSettingA2AServer, toggleSettingA2AServerEnabled, updateSettingA2AServer } from "@/request/ipc/invokeSettingA2A";
+import { getAllSettingModels, saveSettingModel, toggleSettingModelEnabled, updateSettingModel } from "@/request/ipc/invokeSettingModel";
+import { SettingA2AServer } from "@/types/a2a";
 import { SettingModel } from "@/types/setting";
 import { NaturFactory } from "@/utils/NaturFactory";
 import { isEmpty, isNil } from 'lodash';
-import { SettingA2AServer } from "@/types/a2a";
 
 const initState = {
     selectedModel: {
@@ -85,7 +85,6 @@ const actions = NaturFactory.actionsCreator(state)({
             if (isEmpty(models)) {
                 models = settingModels;
             } else {
-                // 确保 OpenAI 模型存在，如果不存在则添加
                 const hasOpenAI = models.some(model => model.modelKey === "OpenAI");
                 if (!hasOpenAI) {
                     const openAIModel = settingModels.find(model => model.modelKey === "OpenAI");
@@ -94,7 +93,6 @@ const actions = NaturFactory.actionsCreator(state)({
                     }
                 }
             }
-            // 使用不可变的方式更新数据
             const updatedModels = models.map(model => ({
                 ...model,
                 comingSoon: model.modelKey === "OpenAI"
@@ -109,7 +107,6 @@ const actions = NaturFactory.actionsCreator(state)({
             throw error;
         }
     },
-    // 保存模型配置
     onSaveModel: (modelData: SettingModel) => async (api) => {
         if (isEmpty(modelData.modelKey) || isEmpty(modelData.apiUrl)) {
             throw new Error('Model key and API URL are required');
@@ -141,7 +138,6 @@ const actions = NaturFactory.actionsCreator(state)({
                     apiUrl: modelData.apiUrl,
                     apiKey: modelData.apiKey
                 });
-                // 更新settingModels中对应模型的数据
                 api.setState((s: State) => {
                     s.settingModels = s.settingModels.map(model =>
                         model.id === modelId
@@ -155,14 +151,12 @@ const actions = NaturFactory.actionsCreator(state)({
             throw error;
         }
     },
-    // 更新本地模型数据（用于表单编辑）
     onUpdateLocalModel: (updates: Partial<SettingModel>) => (api) => {
         api.setState((s: State) => {
             s.selectedModel = { ...s.selectedModel, ...updates };
         });
     },
 
-    // Agents related actions
     onLoadSettingAgents:
         () => async (api) => {
             const agents = await getAllSettingA2AServers();
@@ -195,7 +189,6 @@ const actions = NaturFactory.actionsCreator(state)({
             throw error;
         }
     },
-    // 保存agent配置
     onSaveAgent: (agentData: SettingA2AServer) => async (api) => {
         if (isEmpty(agentData.name) || isEmpty(agentData.agentCardUrl)) {
             throw new Error('Agent name and URL are required');
@@ -215,7 +208,6 @@ const actions = NaturFactory.actionsCreator(state)({
                         s.selectedAgent = { ...s.selectedAgent, id: agentId };
                     }
                 });
-                // 重新加载所有 agents 以确保数据一致性
                 const updatedAgents = await getAllSettingA2AServers();
                 api.setState((s: State) => {
                     s.settingAgents = updatedAgents;
@@ -228,7 +220,6 @@ const actions = NaturFactory.actionsCreator(state)({
                     agentCardUrl: agentData.agentCardUrl,
                     agentCardJson: agentData.agentCardJson
                 });
-                // 重新加载所有 agents 以确保数据一致性
                 const updatedAgents = await getAllSettingA2AServers();
                 api.setState((s: State) => {
                     s.settingAgents = updatedAgents;
@@ -240,7 +231,6 @@ const actions = NaturFactory.actionsCreator(state)({
             throw error;
         }
     },
-    // 删除agent
     onDeleteAgent: (agentId: number) => async (api) => {
         try {
             await deleteSettingA2AServer(agentId);
@@ -254,7 +244,6 @@ const actions = NaturFactory.actionsCreator(state)({
             throw error;
         }
     },
-    // 更新本地agent数据（用于表单编辑）
     onUpdateLocalAgent: (updates: Partial<SettingA2AServer>) => (api) => {
         api.setState((s: State) => {
             if (s.selectedAgent) {
@@ -263,7 +252,6 @@ const actions = NaturFactory.actionsCreator(state)({
         });
     },
 
-    // Agents modal actions
     onShowAgentModal: () => (api) => {
         api.setState((s: State) => {
             s.isAgentModalVisible = true;

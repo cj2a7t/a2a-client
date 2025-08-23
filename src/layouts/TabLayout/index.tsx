@@ -8,7 +8,7 @@ import HeaderTab from "./components/HeaderTab";
 
 const { Header, Content } = Layout;
 const LayoutFC = () => {
-    const [a2aStore] = useFlatInjectOriginal("a2a");
+    const [chatStore] = useFlatInjectOriginal("chat");
     const nav = useNavigate();
     const headerTabRef = useRef<any>(null);
 
@@ -23,18 +23,9 @@ const LayoutFC = () => {
             headerTabRef.current.switchToSettingsTab();
             return;
         }
-
         // Create a new settings tab
         const newKey = uuidv4();
-
-        // Set loading state for the new tab
-        await a2aStore.setTabLoading(newKey, true);
         nav(`/settings?tabKey=${newKey}`);
-
-        // Clear loading state after a short delay
-        setTimeout(async () => {
-            await a2aStore.setTabLoading(newKey, false);
-        }, 500);
     };
 
     const renderItem = (name: string, url: string, isStarred?: boolean) => ({

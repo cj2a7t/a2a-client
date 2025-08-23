@@ -61,3 +61,38 @@ export const toDetailsMarkdown = (
     }
 };
 
+/**
+ * 检测内容是否应该渲染为 markdown
+ * @param content 要检测的内容
+ * @returns 是否应该渲染为 markdown
+ */
+export const shouldRenderAsMarkdown = (content: string): boolean => {
+    // Check if it's a direct model call result
+    if (content.includes('✅ Direct model call completed!') ||
+        content.includes('📝 Note: This was a direct model call since no agent was configured.')) {
+        return true;
+    }
+
+    // Check if content contains markdown format
+    const markdownPatterns = [
+        /^#+\s/,           // Headings
+        /\*\*.*\*\*/,      // Bold
+        /\*.*\*/,          // Italic
+        /`.*`/,            // Inline code
+        /```[\s\S]*```/,   // Code blocks
+        /\[.*\]\(.*\)/,    // Links
+        /^\s*[-*+]\s/,     // Lists
+        /^\s*\d+\.\s/,     // Ordered lists
+        />\s/,             // Quotes
+    ];
+
+    // Enhanced HTML pattern detection for details, summary, and other HTML tags
+    const htmlPattern = /<\/?[a-z][\s\S]*>/i;
+    const hasHtmlTags = htmlPattern.test(content);
+
+    // Specific check for details/summary tags
+    const hasDetailsTags = /<\/?details/i.test(content) || /<\/?summary/i.test(content);
+
+    return markdownPatterns.some(pattern => pattern.test(content)) || hasHtmlTags || hasDetailsTags;
+};
+
