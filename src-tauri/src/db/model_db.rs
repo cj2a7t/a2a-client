@@ -42,9 +42,7 @@ impl SettingModelDbManager {
     }
 
     /// Insert a new setting model
-    pub fn insert(&self, params: &SettingModelParams, handler: &AppHandle) -> Result<i64> {
-        self.init(handler)?;
-
+    pub fn insert(&self, params: &SettingModelParams) -> Result<i64> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -74,9 +72,7 @@ impl SettingModelDbManager {
     }
 
     /// Update an existing setting model
-    pub fn update(&self, params: &UpdateSettingModelParams, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn update(&self, params: &UpdateSettingModelParams) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -111,11 +107,16 @@ impl SettingModelDbManager {
             update_fields.join(", ")
         );
 
-        let result = db.connection.execute(&sql, rusqlite::params_from_iter(values.iter()));
+        let result = db
+            .connection
+            .execute(&sql, rusqlite::params_from_iter(values.iter()));
 
         match result {
             Ok(rows_affected) => {
-                info!("Updated setting model with id: {}, rows affected: {}", params.id, rows_affected);
+                info!(
+                    "Updated setting model with id: {}, rows affected: {}",
+                    params.id, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -126,9 +127,7 @@ impl SettingModelDbManager {
     }
 
     /// Get all setting models
-    pub fn get_all(&self, handler: &AppHandle) -> Result<Vec<SettingModel>> {
-        self.init(handler)?;
-
+    pub fn get_all(&self) -> Result<Vec<SettingModel>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -150,9 +149,7 @@ impl SettingModelDbManager {
     }
 
     /// Get a setting model by ID
-    pub fn get_by_id(&self, id: i32, handler: &AppHandle) -> Result<Option<SettingModel>> {
-        self.init(handler)?;
-
+    pub fn get_by_id(&self, id: i32) -> Result<Option<SettingModel>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -174,9 +171,10 @@ impl SettingModelDbManager {
     }
 
     /// Get a setting model by model_key
-    pub fn get_by_model_key(&self, model_key: &str, handler: &AppHandle) -> Result<Option<SettingModel>> {
-        self.init(handler)?;
-
+    pub fn get_by_model_key(
+        &self,
+        model_key: &str,
+    ) -> Result<Option<SettingModel>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -198,9 +196,7 @@ impl SettingModelDbManager {
     }
 
     /// Get enabled setting models
-    pub fn get_enabled(&self, handler: &AppHandle) -> Result<Vec<SettingModel>> {
-        self.init(handler)?;
-
+    pub fn get_enabled(&self) -> Result<Vec<SettingModel>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -222,9 +218,7 @@ impl SettingModelDbManager {
     }
 
     /// Delete a setting model by ID
-    pub fn delete_by_id(&self, id: i32, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn delete_by_id(&self, id: i32) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -235,7 +229,10 @@ impl SettingModelDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Deleted setting model with id: {}, rows affected: {}", id, rows_affected);
+                info!(
+                    "Deleted setting model with id: {}, rows affected: {}",
+                    id, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -246,20 +243,22 @@ impl SettingModelDbManager {
     }
 
     /// Delete a setting model by model_key
-    pub fn delete_by_model_key(&self, model_key: &str, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn delete_by_model_key(&self, model_key: &str) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
 
-        let result = db
-            .connection
-            .execute("DELETE FROM tb_setting_model WHERE model_key = ?", [model_key]);
+        let result = db.connection.execute(
+            "DELETE FROM tb_setting_model WHERE model_key = ?",
+            [model_key],
+        );
 
         match result {
             Ok(rows_affected) => {
-                info!("Deleted setting model with model_key: {}, rows affected: {}", model_key, rows_affected);
+                info!(
+                    "Deleted setting model with model_key: {}, rows affected: {}",
+                    model_key, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -270,9 +269,7 @@ impl SettingModelDbManager {
     }
 
     /// Toggle the enabled status of a setting model
-    pub fn toggle_enabled(&self, id: i32, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn toggle_enabled(&self, id: i32) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -284,7 +281,10 @@ impl SettingModelDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Toggled enabled status for setting model with id: {}, rows affected: {}", id, rows_affected);
+                info!(
+                    "Toggled enabled status for setting model with id: {}, rows affected: {}",
+                    id, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -295,9 +295,7 @@ impl SettingModelDbManager {
     }
 
     /// Ensure only one model is enabled at a time (disable others when one is enabled)
-    pub fn ensure_single_enabled(&self, enabled_id: i32, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn ensure_single_enabled(&self, enabled_id: i32) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -309,7 +307,10 @@ impl SettingModelDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Disabled other setting models, rows affected: {}", rows_affected);
+                info!(
+                    "Disabled other setting models, rows affected: {}",
+                    rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -329,4 +330,4 @@ impl SettingModelDbManager {
             api_key: row.get(4)?,
         })
     }
-} 
+}

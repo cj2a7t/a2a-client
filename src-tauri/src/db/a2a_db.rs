@@ -42,16 +42,13 @@ impl SettingA2AServerDbManager {
     }
 
     /// Insert a new A2A server
-    pub fn insert(&self, params: &SettingA2AServerParams, handler: &AppHandle) -> Result<i64> {
-        self.init(handler)?;
-
+    pub fn insert(&self, params: &SettingA2AServerParams) -> Result<i64> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
 
         let result = db.connection.execute(
-            "INSERT INTO tb_setting_a2a_server (name, agent_card_url, agent_card_json, enabled)
-             VALUES (?1, ?2, ?3, ?4)",
+            "INSERT INTO tb_setting_a2a_server (name, agent_card_url, agent_card_json, enabled) VALUES (?1, ?2, ?3, ?4)",
             (
                 &params.name,
                 &params.agent_card_url,
@@ -74,9 +71,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Update an existing A2A server
-    pub fn update(&self, params: &UpdateSettingA2AServerParams, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn update(&self, params: &UpdateSettingA2AServerParams) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -116,11 +111,16 @@ impl SettingA2AServerDbManager {
             update_fields.join(", ")
         );
 
-        let result = db.connection.execute(&sql, rusqlite::params_from_iter(values.iter()));
+        let result = db
+            .connection
+            .execute(&sql, rusqlite::params_from_iter(values.iter()));
 
         match result {
             Ok(rows_affected) => {
-                info!("Updated A2A server with id: {}, rows affected: {}", params.id, rows_affected);
+                info!(
+                    "Updated A2A server with id: {}, rows affected: {}",
+                    params.id, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -131,9 +131,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Get all A2A servers
-    pub fn get_all(&self, handler: &AppHandle) -> Result<Vec<SettingA2AServer>> {
-        self.init(handler)?;
-
+    pub fn get_all(&self) -> Result<Vec<SettingA2AServer>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -155,9 +153,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Get an A2A server by ID
-    pub fn get_by_id(&self, id: i32, handler: &AppHandle) -> Result<Option<SettingA2AServer>> {
-        self.init(handler)?;
-
+    pub fn get_by_id(&self, id: i32) -> Result<Option<SettingA2AServer>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -179,9 +175,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Get an A2A server by name
-    pub fn get_by_name(&self, name: &str, handler: &AppHandle) -> Result<Option<SettingA2AServer>> {
-        self.init(handler)?;
-
+    pub fn get_by_name(&self, name: &str) -> Result<Option<SettingA2AServer>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -203,9 +197,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Get enabled A2A servers
-    pub fn get_enabled(&self, handler: &AppHandle) -> Result<Vec<SettingA2AServer>> {
-        self.init(handler)?;
-
+    pub fn get_enabled(&self) -> Result<Vec<SettingA2AServer>> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -227,9 +219,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Delete an A2A server by ID
-    pub fn delete_by_id(&self, id: i32, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn delete_by_id(&self, id: i32) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -240,7 +230,10 @@ impl SettingA2AServerDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Deleted A2A server with id: {}, rows affected: {}", id, rows_affected);
+                info!(
+                    "Deleted A2A server with id: {}, rows affected: {}",
+                    id, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -251,9 +244,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Delete an A2A server by name
-    pub fn delete_by_name(&self, name: &str, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn delete_by_name(&self, name: &str) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -264,7 +255,10 @@ impl SettingA2AServerDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Deleted A2A server with name: {}, rows affected: {}", name, rows_affected);
+                info!(
+                    "Deleted A2A server with name: {}, rows affected: {}",
+                    name, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -275,9 +269,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Toggle the enabled status of an A2A server
-    pub fn toggle_enabled(&self, id: i32, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn toggle_enabled(&self, id: i32) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -289,7 +281,10 @@ impl SettingA2AServerDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Toggled enabled status for A2A server with id: {}, rows affected: {}", id, rows_affected);
+                info!(
+                    "Toggled enabled status for A2A server with id: {}, rows affected: {}",
+                    id, rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -300,9 +295,7 @@ impl SettingA2AServerDbManager {
     }
 
     /// Ensure only one A2A server is enabled at a time (disable others when one is enabled)
-    pub fn ensure_single_enabled(&self, enabled_id: i32, handler: &AppHandle) -> Result<usize> {
-        self.init(handler)?;
-
+    pub fn ensure_single_enabled(&self, enabled_id: i32) -> Result<usize> {
         let db = crate::db::rusqlite::DB
             .lock()
             .map_err(|e| anyhow::anyhow!("failed to acquire DB lock: {e}"))?;
@@ -314,7 +307,10 @@ impl SettingA2AServerDbManager {
 
         match result {
             Ok(rows_affected) => {
-                info!("Disabled other A2A servers, rows affected: {}", rows_affected);
+                info!(
+                    "Disabled other A2A servers, rows affected: {}",
+                    rows_affected
+                );
                 Ok(rows_affected)
             }
             Err(e) => {
@@ -336,4 +332,4 @@ impl SettingA2AServerDbManager {
             updated_at: row.get(6)?,
         })
     }
-} 
+}

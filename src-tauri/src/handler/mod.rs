@@ -1,20 +1,15 @@
 use ai::chat_completions::ChatCompletion;
+use ai::{Result, chat_completions::ChatCompletionMessage, clients::openai::Client as AiClient};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
-use ai::{
-    chat_completions::ChatCompletionMessage,
-    clients::openai::Client as AiClient,
-    Result,
-};
 
 use crate::{
-    db::{dynmcp_connection, model_db::SettingModelDbManager},
+    db::model_db::SettingModelDbManager,
     model::{
-        to_invoke_response, A2AMessage, A2AMessageParams, A2AMessagePart, A2ARequest, AgentCard,
-        AgentCardParams, ChatCompletionParams, ChatCompletionStreamParams, DyncmcpConnection,
-        InvokeResponse, JSONRPCRequest, SettingModel, SettingModelParams, PingConParams,
-        UpdateSettingModelParams,
+        A2AMessage, A2AMessageParams, A2AMessagePart, A2ARequest, AgentCard, AgentCardParams,
+        ChatCompletionParams, ChatCompletionStreamParams, InvokeResponse, JSONRPCRequest,
+        SettingModel, SettingModelParams, UpdateSettingModelParams, to_invoke_response,
     },
 };
 
@@ -26,73 +21,6 @@ pub struct StreamChunk {
     pub error: Option<String>,
     pub status: Option<String>,
     pub message: Option<String>,
-}
-
-#[tauri::command]
-pub async fn save_dynmcp_connection(
-    conn: DyncmcpConnection,
-    handle: AppHandle,
-) -> InvokeResponse<i64> {
-    // ping first to test the connection
-    let ping_params: PingConParams = (&conn).into();
-    let ping_result = ping(ping_params).await;
-    if ping_result.code != 0 {
-        return InvokeResponse::fail(format!("Connection test failed: {}", ping_result.message));
-    }
-    // save the connection
-    dynmcp_connection::upsert(&conn, &handle)
-        .map(|res| InvokeResponse::success(res))
-        .unwrap_or_else(|e| to_invoke_response(e))
-}
-
-#[tauri::command]
-pub async fn query_all(handle: AppHandle) -> InvokeResponse<Vec<DyncmcpConnection>> {
-    dynmcp_connection::query_all(&handle)
-        .map(InvokeResponse::success)
-        .unwrap_or_else(|e| to_invoke_response(e))
-}
-
-#[tauri::command]
-pub async fn ping(params: PingConParams) -> InvokeResponse<String> {
-    let client = Client::new();
-    let mut req = client.get(format!("{}/healthz", &params.url));
-
-    if let Some(api_key) = params.api_key {
-        req = req.header("api_key", api_key);
-    }
-
-    let response = req.send().await;
-    let result = match response {
-        Ok(resp) => {
-            let status = resp.status();
-            log::info!("HTTP status: {}", status);
-            log::info!("Headers: {:#?}", resp.headers());
-
-            let body = resp.text().await;
-            match body {
-                Ok(text) => {
-                    log::info!("Response body: {}", text);
-                    if status.is_success() {
-                        Ok(text)
-                    } else {
-                        Err(format!("Request failed with status {}: {}", status, text))
-                    }
-                }
-                Err(e) => {
-                    log::error!("Failed to read response body: {}", e);
-                    Err(format!("Failed to read response body: {}", e))
-                }
-            }
-        }
-        Err(e) => {
-            log::error!("Failed to send request: {}", e);
-            Err(format!("Failed to connect: {}", e))
-        }
-    };
-
-    result
-        .map(InvokeResponse::success)
-        .unwrap_or_else(InvokeResponse::fail)
 }
 
 #[tauri::command]
@@ -139,7 +67,9 @@ pub async fn chat_completion(params: ChatCompletionParams) -> InvokeResponse<Str
         Ok(response) => {
             log::info!("Successfully received response from AI API");
 
-            if let Some(content) = response.choices.first()
+            if let Some(content) = response
+                .choices
+                .first()
                 .and_then(|choice| choice.message.content.as_ref())
             {
                 return InvokeResponse::success(content.clone());
@@ -291,12 +221,11 @@ pub async fn send_a2a_message(params: A2AMessageParams) -> InvokeResponse<String
 #[tauri::command]
 pub async fn save_setting_model(
     params: SettingModelParams,
-    handle: AppHandle,
 ) -> InvokeResponse<i64> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .insert(&params, &handle)
+        .insert(&params)
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
@@ -304,58 +233,51 @@ pub async fn save_setting_model(
 #[tauri::command]
 pub async fn update_setting_model(
     params: UpdateSettingModelParams,
-    handle: AppHandle,
 ) -> InvokeResponse<usize> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .update(&params, &handle)
+        .update(&params)
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
 
 #[tauri::command]
-pub async fn get_all_setting_models(handle: AppHandle) -> InvokeResponse<Vec<SettingModel>> {
+pub async fn get_all_setting_models() -> InvokeResponse<Vec<SettingModel>> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .get_all(&handle)
+        .get_all()
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
 
 #[tauri::command]
-pub async fn get_enabled_setting_models(handle: AppHandle) -> InvokeResponse<Vec<SettingModel>> {
+pub async fn get_enabled_setting_models() -> InvokeResponse<Vec<SettingModel>> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .get_enabled(&handle)
+        .get_enabled()
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
 
 #[tauri::command]
-pub async fn toggle_setting_model_enabled(
-    id: i32,
-    handle: AppHandle,
-) -> InvokeResponse<usize> {
+pub async fn toggle_setting_model_enabled(id: i32) -> InvokeResponse<usize> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .toggle_enabled(id, &handle)
+        .toggle_enabled(id)
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
 
 #[tauri::command]
-pub async fn delete_setting_model(
-    id: i32,
-    handle: AppHandle,
-) -> InvokeResponse<usize> {
+pub async fn delete_setting_model(id: i32) -> InvokeResponse<usize> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .delete_by_id(id, &handle)
+        .delete_by_id(id)
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
@@ -363,12 +285,11 @@ pub async fn delete_setting_model(
 #[tauri::command]
 pub async fn ensure_single_setting_model_enabled(
     enabled_id: i32,
-    handle: AppHandle,
 ) -> InvokeResponse<usize> {
     let db_manager = SettingModelDbManager::new();
 
     db_manager
-        .ensure_single_enabled(enabled_id, &handle)
+        .ensure_single_enabled(enabled_id)
         .map(InvokeResponse::success)
         .unwrap_or_else(|e| to_invoke_response(e))
 }
@@ -389,10 +310,14 @@ fn build_chat_messages(params: &ChatCompletionParams) -> Vec<ChatCompletionMessa
     let mut messages = Vec::new();
 
     if !params.system_prompt.trim().is_empty() {
-        messages.push(ChatCompletionMessage::System(params.system_prompt.clone().into()));
+        messages.push(ChatCompletionMessage::System(
+            params.system_prompt.clone().into(),
+        ));
     }
 
-    messages.push(ChatCompletionMessage::User(params.user_prompt.clone().into()));
+    messages.push(ChatCompletionMessage::User(
+        params.user_prompt.clone().into(),
+    ));
 
     messages
 }

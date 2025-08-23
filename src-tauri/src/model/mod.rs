@@ -1,21 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct DyncmcpConnection {
-    #[serde(skip_deserializing)]
-    pub id: Option<i32>,
-    pub name: String,
-    pub url: String,
-    pub api_key: String,
-    pub starred: bool,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct PingConParams {
-    pub url: String,
-    pub api_key: Option<String>,
-}
-
 #[derive(Serialize)]
 pub struct InvokeResponse<T> {
     pub code: i32,
@@ -43,15 +27,6 @@ impl<T> InvokeResponse<T> {
 
 pub fn to_invoke_response<T>(err: anyhow::Error) -> InvokeResponse<T> {
     InvokeResponse::fail(err.to_string())
-}
-
-impl From<&DyncmcpConnection> for PingConParams {
-    fn from(conn: &DyncmcpConnection) -> Self {
-        PingConParams {
-            url: conn.url.clone(),
-            api_key: Some(conn.api_key.clone()),
-        }
-    }
 }
 
 // AI chat related type definitions - Using openai crate instead

@@ -1,7 +1,7 @@
 use std::sync::atomic::AtomicBool;
 
 use crate::{
-    db::rusqlite::SqlState,
+    db::{init_all_tables, rusqlite::SqlState},
     handler::{
         a2a_server::{
             delete_setting_a2a_server, delete_setting_a2a_server_by_name,
@@ -13,8 +13,8 @@ use crate::{
         chat::stream_chat,
         chat_completion, chat_completion_stream, delete_setting_model,
         ensure_single_setting_model_enabled, get_agent_card, get_all_setting_models,
-        get_enabled_setting_models, ping, query_all, save_dynmcp_connection, save_setting_model,
-        send_a2a_message, toggle_setting_model_enabled, update_setting_model,
+        get_enabled_setting_models, save_setting_model, send_a2a_message,
+        toggle_setting_model_enabled, update_setting_model,
     },
     webview::native::window_design,
 };
@@ -39,12 +39,13 @@ pub fn run() -> Result<()> {
             }
             window_design(app)?;
             db::rusqlite::init_db_conn(&app.handle())?;
+            
+            // Initialize all database tables
+            init_all_tables(&app.handle())?;
+            
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            save_dynmcp_connection,
-            query_all,
-            ping,
             stream_chat,
             chat_completion,
             chat_completion_stream,

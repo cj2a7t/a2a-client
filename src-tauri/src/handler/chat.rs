@@ -57,7 +57,7 @@ pub async fn stream_chat(
             while let Some(chunk_result) = stream.next().await {
                 // Check for timeout
                 if start_time.elapsed().as_secs() > 5 * 60 {
-                    return timeout_error(&handle, &start_time).await;
+                    return timeout_error(&handle).await;
                 }
 
                 let chunk = match chunk_result {
@@ -86,7 +86,7 @@ pub async fn stream_chat(
             }
 
             // Complete streaming
-            complete_streaming(&handle, &start_time, chunk_count).await;
+            complete_streaming(&handle, chunk_count).await;
             InvokeResponse::success(full_content)
         }
         Err(e) => error_response(&format!("Request failed: {}", e)),
@@ -135,10 +135,7 @@ async fn emit_chunk(handle: &AppHandle, content: &str) {
 }
 
 // Handle timeout error
-async fn timeout_error(
-    handle: &AppHandle,
-    start_time: &std::time::Instant,
-) -> InvokeResponse<String> {
+async fn timeout_error(handle: &AppHandle) -> InvokeResponse<String> {
     log::warn!("Streaming timeout after 5 minutes");
     let _ = handle.emit(
         "chat_stream_chunk",
@@ -154,11 +151,7 @@ async fn timeout_error(
 }
 
 // Handle streaming completion
-async fn complete_streaming(
-    handle: &AppHandle,
-    start_time: &std::time::Instant,
-    chunk_count: usize,
-) -> InvokeResponse<String> {
+async fn complete_streaming(handle: &AppHandle, chunk_count: usize) -> InvokeResponse<String> {
     log::info!("Stream completed after {} chunks", chunk_count);
     let _ = handle.emit(
         "chat_stream_chunk",
