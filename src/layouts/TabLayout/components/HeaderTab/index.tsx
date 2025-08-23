@@ -1,10 +1,10 @@
+import { useFlatInject } from "@/utils/hooks";
 import { getTabKey } from "@/utils/tabkey";
-import { RobotOutlined, SettingOutlined, ApiOutlined, DatabaseOutlined } from "@ant-design/icons";
+import { RobotOutlined, SettingOutlined } from "@ant-design/icons";
 import { Button, Flex, Tooltip } from "antd";
-import React, { useEffect, useRef, useState, useCallback, useImperativeHandle } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useLocation, useNavigate } from "umi";
 import { v4 as uuidv4 } from "uuid";
-import { useFlatInject } from "@/utils/hooks";
 import "./style.less";
 
 interface TabItem {
@@ -40,32 +40,32 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
     // Calculate tab width
     const calculateTabWidth = useCallback(() => {
         if (!containerRef.current) return PREFERRED_TAB_WIDTH;
-        
+
         const containerWidth = containerRef.current.offsetWidth;
         const availableWidth = containerWidth - 120; // 减少预留空间，给更多tab空间
         const totalTabs = items.length;
-        
+
         if (totalTabs === 0) return PREFERRED_TAB_WIDTH;
-        
+
         let tabWidth = Math.max(MIN_TAB_WIDTH, availableWidth / totalTabs);
         tabWidth = Math.min(tabWidth, MAX_TAB_WIDTH);
-        
+
         return Math.floor(tabWidth);
     }, [items.length]);
 
     // Scroll to active tab
     const scrollToActiveTab = useCallback(() => {
         if (!scrollContainerRef.current || !containerRef.current) return;
-        
+
         const scrollContainer = scrollContainerRef.current;
         const container = containerRef.current;
         const activeTab = scrollContainer.querySelector('.tab-item.active') as HTMLElement;
-        
+
         if (activeTab) {
             const tabLeft = activeTab.offsetLeft;
             const tabWidth = activeTab.offsetWidth;
             const containerWidth = container.offsetWidth;
-            
+
             scrollContainer.scrollLeft = tabLeft - (containerWidth - tabWidth) / 2;
         }
     }, []);
@@ -82,8 +82,6 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
     // Get icon for path
     const getIconForPath = (pathname: string) => {
         const iconMap: Record<string, React.ReactNode> = {
-            "/new_connection": <ApiOutlined />,
-            "/xds": <DatabaseOutlined />,
             "/a2a": <RobotOutlined />,
             "/settings": <SettingOutlined />,
         };
@@ -100,8 +98,6 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
         }
         const exists = items.find((item) => item.key === tabKey);
         const labelMap: Record<string, string> = {
-            "/new_connection": "New Connection",
-            "/xds": "xDS Overview",
             "/a2a": "A2A Client",
             "/settings": "Settings",
         };
@@ -132,7 +128,7 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
         }
 
         setActiveKey(tabKey);
-        
+
         // Delayed scroll to active tab, ensure DOM is updated
         setTimeout(scrollToActiveTab, 100);
     }, [location, scrollToActiveTab]);
@@ -140,13 +136,13 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
     const switchTab = async (tabKey: string) => {
         // Set loading state for the new tab
         await a2aStore.setTabLoading(tabKey, true);
-        
+
         setActiveKey(tabKey);
         const matchItem = items.find((item) => item.key === tabKey);
         if (matchItem?.path) {
             nav(matchItem.path);
         }
-        
+
         // Wait for navigation to complete before clearing loading
         setTimeout(async () => {
             // Double check if we're still on the same tab
@@ -171,11 +167,11 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
         const newPanes = [...items, newTab];
         setItems(newPanes);
         setActiveKey(newKey);
-        
+
         // Set loading state for the new tab
         await a2aStore.setTabLoading(newKey, true);
         nav(newTab.path);
-        
+
         // Clear loading state after a short delay
         setTimeout(async () => {
             await a2aStore.setTabLoading(newKey, false);
@@ -235,7 +231,7 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
         >
             <Flex align="center" gap={8} className="tab-container">
                 {/* Tab scroll container */}
-                <div 
+                <div
                     className="tab-scroll-container"
                     ref={scrollContainerRef}
                     onWheel={handleWheel}
@@ -252,9 +248,8 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
                         {items.map((item) => (
                             <div
                                 key={item.key}
-                                className={`tab-item ${
-                                    activeKey === item.key ? "active" : ""
-                                }`}
+                                className={`tab-item ${activeKey === item.key ? "active" : ""
+                                    }`}
                                 onClick={() => switchTab(item.key)}
                                 style={{ width: `${tabWidth}px` }}
                             >
