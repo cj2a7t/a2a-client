@@ -3,7 +3,7 @@ import { formatTime } from '@/utils/date';
 import { shouldRenderAsMarkdown } from '@/utils/markdown';
 import { CopyOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Flex, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -15,13 +15,15 @@ const { Text } = Typography;
 interface MessageItemProps {
     message: Message;
     onCopy: (content: string) => void;
+    onHeightChange?: () => void; // ⭐ 新增回调
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
+const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, onHeightChange }) => {
     const [thinkingEmoji, setThinkingEmoji] = useState('🤔');
 
-    // thinking and use emoji animation
     const isThinking = message.content === '🤔 Thinking...';
+
+    // 思考动画
     useEffect(() => {
         if (isThinking) {
             const emojis = ['🤔', '🤨', '🧐', '🤓', '🤯', '💭', '💡', '🎯', '🔍', '⚡'];
@@ -30,11 +32,87 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
             const interval = setInterval(() => {
                 setThinkingEmoji(emojis[currentIndex]);
                 currentIndex = (currentIndex + 1) % emojis.length;
+
+                onHeightChange?.();
             }, 800);
 
             return () => clearInterval(interval);
         }
-    }, [isThinking]);
+    }, [isThinking, onHeightChange]);
+
+    useEffect(() => {
+        onHeightChange?.();
+    }, [message.content, onHeightChange]);
+
+    const handleCopyMessage = useCallback(() => {
+        onCopy(message.content);
+    }, [message.content, onCopy]);
+
+    const handleCopyCode = useCallback((codeContent: string) => {
+        onCopy(codeContent);
+    }, [onCopy]);
+
+    const markdownComponents = useMemo(() => ({
+        code: ({ className, children, ...props }: any) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const language = match ? match[1] : '';
+
+            if (match) {
+                return (
+                    <div className="code-block-container">
+                        <div className="code-block-header">
+                            <span className="language-label">{language}</span>
+                            <Button
+                                type="text"
+                                size="small"
+                                icon={<CopyOutlined />}
+                                onClick={() => handleCopyCode(String(children))}
+                                className="copy-code-btn"
+                                title="Copy code"
+                            />
+                        </div>
+                        <SyntaxHighlighter
+                            style={oneLight}
+                            language={language}
+                            PreTag="div"
+                            customStyle={{
+                                margin: 0,
+                                fontSize: '12px',
+                                lineHeight: '1.5',
+                                background: 'transparent'
+                            }}
+                        >
+                            {String(children).replace(/\n$/, '')}
+                        </SyntaxHighlighter>
+                    </div>
+                );
+            }
+
+            return (
+                <code className={`inline-code ${className}`} {...props}>
+                    {children}
+                </code>
+            );
+        },
+        a: ({ children, href, ...props }: any) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+                {children}
+            </a>
+        ),
+        details: ({ children, ...props }: any) => (
+            <details {...props} className="markdown-details">
+                {children}
+            </details>
+        ),
+        summary: ({ children, ...props }: any) => (
+            <summary {...props} className="markdown-summary">
+                {children}
+            </summary>
+        )
+    }), [handleCopyCode]);
+
+    const formattedTime = useMemo(() => formatTime(message.timestamp), [message.timestamp]);
+    const shouldRenderMarkdown = useMemo(() => shouldRenderAsMarkdown(message.content), [message.content]);
 
     if (message.type === 'user') {
         return (
@@ -52,12 +130,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
                                 type="text"
                                 size="small"
                                 icon={<CopyOutlined />}
-                                onClick={() => onCopy(message.content)}
+                                onClick={handleCopyMessage}
                                 className="copy-btn"
                                 title="Copy message"
                             />
                             <Text type="secondary" style={{ fontSize: 12, marginTop: 4, textAlign: 'right' }}>
-                                {formatTime(message.timestamp)}
+                                {formattedTime}
                             </Text>
                         </div>
                     </div>
@@ -100,72 +178,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
                                 </div>
                                 <Text style={{ marginLeft: 8 }}>Thinking...</Text>
                             </div>
-                        ) : shouldRenderAsMarkdown(message.content) ? (
+                        ) : shouldRenderMarkdown ? (
                             <div className="markdown-content">
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     rehypePlugins={[]}
-                                    components={{
-                                        // Enhanced code block with syntax highlighting
-                                        code: ({ className, children, ...props }: any) => {
-                                            const match = /language-(\w+)/.exec(className || '');
-                                            const language = match ? match[1] : '';
-
-                                            if (match) {
-                                                return (
-                                                    <div className="code-block-container">
-                                                        <div className="code-block-header">
-                                                            <span className="language-label">{language}</span>
-                                                            <Button
-                                                                type="text"
-                                                                size="small"
-                                                                icon={<CopyOutlined />}
-                                                                onClick={() => onCopy(String(children))}
-                                                                className="copy-code-btn"
-                                                                title="Copy code"
-                                                            />
-                                                        </div>
-                                                        <SyntaxHighlighter
-                                                            style={oneLight}
-                                                            language={language}
-                                                            PreTag="div"
-                                                            customStyle={{
-                                                                margin: 0,
-                                                                fontSize: '12px',
-                                                                lineHeight: '1.5',
-                                                                background: 'transparent'
-                                                            }}
-                                                        >
-                                                            {String(children).replace(/\n$/, '')}
-                                                        </SyntaxHighlighter>
-                                                    </div>
-                                                );
-                                            }
-
-                                            return (
-                                                <code className={`inline-code ${className}`} {...props}>
-                                                    {children}
-                                                </code>
-                                            );
-                                        },
-                                        // Custom link styles
-                                        a: ({ children, href, ...props }: any) => (
-                                            <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
-                                                {children}
-                                            </a>
-                                        ),
-                                        // Custom details and summary components
-                                        details: ({ children, ...props }: any) => (
-                                            <details {...props} className="markdown-details">
-                                                {children}
-                                            </details>
-                                        ),
-                                        summary: ({ children, ...props }: any) => (
-                                            <summary {...props} className="markdown-summary">
-                                                {children}
-                                            </summary>
-                                        )
-                                    }}
+                                    components={markdownComponents}
                                 >
                                     {message.content}
                                 </ReactMarkdown>
@@ -179,18 +197,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy }) => {
                             type="text"
                             size="small"
                             icon={<CopyOutlined />}
-                            onClick={() => onCopy(message.content)}
+                            onClick={handleCopyMessage}
                             className="copy-btn"
                             title="Copy message"
                         />
                         <Text type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
-                            {formatTime(message.timestamp)}
+                            {formattedTime}
                         </Text>
                     </div>
                 </div>
             </Flex>
         </div>
     );
-};
+});
 
-export default MessageItem; 
+MessageItem.displayName = 'MessageItem';
+
+export default MessageItem;

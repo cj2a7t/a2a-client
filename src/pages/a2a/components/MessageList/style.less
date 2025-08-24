@@ -1,30 +1,35 @@
 .messages-container {
     flex: 1;
-    overflow-y: auto;
-    padding: 16px 24px 24px 24px;
+    overflow: hidden; // Changed from overflow-y: auto to overflow: hidden for virtuoso
     display: flex;
     flex-direction: column;
-    gap: 12px;
     min-height: 0;
-    scroll-behavior: smooth;
+    height: 100%; // Ensure full height for virtuoso
+    position: relative; // Add position relative for proper layout
 
-    &::-webkit-scrollbar {
-        width: 6px;
+    // Virtuoso will handle scrolling internally
+    // Remove gap as virtuoso handles item spacing
+}
+
+// Add styles for virtuoso container
+.messages-container .virtuoso-grid-list {
+    margin: 0;
+}
+
+// Ensure message items have proper spacing
+.messages-container .message-item {
+    margin-bottom: 12px;
+
+    &:last-child {
+        margin-bottom: 0;
     }
+}
 
-    &::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
-
-        &:hover {
-            background: #a8a8a8;
-        }
-    }
+// Ensure virtuoso takes full width and height
+.messages-container>div>div {
+    width: 100% !important;
+    height: calc(100% - 16px) !important;
+    padding: 16px;
 }
 
 .empty-state {
@@ -62,20 +67,24 @@
         transform: translateY(0px) rotate(0deg) scale(1);
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) brightness(1);
     }
+
     25% {
         transform: translateY(-8px) rotate(5deg) scale(1.05);
         filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) brightness(1.1);
     }
+
     50% {
         transform: translateY(0px) rotate(0deg) scale(1);
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) brightness(1);
     }
+
     75% {
         transform: translateY(-8px) rotate(-5deg) scale(1.05);
         filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) brightness(1.1);
     }
+
     100% {
         transform: translateY(0px) rotate(0deg) scale(1);
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) brightness(1);
     }
-} 
+}

@@ -1,14 +1,14 @@
-import React from 'react';
-import { Table, Switch, Typography, message, Popover, Tooltip, Badge } from 'antd';
-import { RobotOutlined } from '@ant-design/icons';
-import './style.less';
 import { SettingA2AServer } from '@/types/a2a';
 import { useFlatInject, useHttp } from '@/utils/hooks';
+import { RobotOutlined } from '@ant-design/icons';
+import { Badge, Popover, Switch, Table, Tooltip, Typography } from 'antd';
+import React, { useCallback, useMemo } from 'react';
+import './style.less';
 
 const { Text } = Typography;
 
 
-const A2AServerSelector: React.FC = () => {
+const A2AServerSelector: React.FC = React.memo(() => {
 
     const [store] = useFlatInject("setting");
     const { loading: loadingSettingAgents } = useHttp(() => store.onLoadSettingAgents());
@@ -17,7 +17,18 @@ const A2AServerSelector: React.FC = () => {
         onToggleAgentEnabled
     } = store;
 
-    const columns = [
+    // Memoize the toggle handler
+    const handleToggleAgent = useCallback((agentId: number) => {
+        onToggleAgentEnabled(agentId);
+    }, [onToggleAgentEnabled]);
+
+    // Memoize the enabled agents count
+    const enabledAgentsCount = useMemo(() => 
+        settingAgents.filter(agent => agent.enabled).length, [settingAgents]
+    );
+
+    // Memoize the columns configuration
+    const columns = useMemo(() => [
         {
             title: 'Name',
             dataIndex: 'name',
@@ -96,16 +107,19 @@ const A2AServerSelector: React.FC = () => {
                     <Switch
                         checked={record.enabled}
                         onChange={(_checked) => {
-                            onToggleAgentEnabled(record.id);
+                            if (record.id !== undefined) {
+                                handleToggleAgent(record.id);
+                            }
                         }}
                         size="small"
                     />
                 </div>
             ),
         },
-    ];
+    ], [handleToggleAgent]);
 
-    const renderServerTable = () => (
+    // Memoize the server table renderer
+    const renderServerTable = useCallback(() => (
         <div className="a2a-server-list">
             <div className="server-list-header">
                 <Text strong style={{ fontSize: '12px', color: '#262626' }}>
@@ -123,7 +137,7 @@ const A2AServerSelector: React.FC = () => {
                 size="small"
             />
         </div>
-    );
+    ), [columns, settingAgents]);
 
     return (
         <div className="a2a-server-selector">
@@ -139,9 +153,9 @@ const A2AServerSelector: React.FC = () => {
                     type="button"
                 >
                     <RobotOutlined className="trigger-icon" />
-                    {settingAgents.filter(agent => agent.enabled).length > 0 && (
+                    {enabledAgentsCount > 0 && (
                         <Badge
-                            count={settingAgents.filter(agent => agent.enabled).length}
+                            count={enabledAgentsCount}
                             style={{ backgroundColor: '#52c41a' }}
                         />
                     )}
@@ -149,6 +163,8 @@ const A2AServerSelector: React.FC = () => {
             </Popover>
         </div>
     );
-};
+});
+
+A2AServerSelector.displayName = 'A2AServerSelector';
 
 export default A2AServerSelector; 

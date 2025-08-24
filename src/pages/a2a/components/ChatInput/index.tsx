@@ -4,7 +4,7 @@ import { useTabKey } from '@/utils/tabkey';
 import { DeleteOutlined, MessageOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Button, Mentions } from 'antd';
 import { debounce, isEmpty } from 'lodash';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import A2AServerSelector from '../A2AServerSelector';
 import './style.less';
 
@@ -30,7 +30,7 @@ const commands = [
     }
 ];
 
-const ChatInput: React.FC = () => {
+const ChatInput: React.FC = React.memo(() => {
 
     const tabKey = useTabKey();
     const [store] = useFlatInject("chat");
@@ -46,9 +46,10 @@ const ChatInput: React.FC = () => {
     } = store;
     const { userMessage } = mapChat(tabKey);
 
-    const handleMentionsChange = (text: string) => {
+    // Memoize the mentions change handler
+    const handleMentionsChange = useCallback((text: string) => {
         onUpdateUserMessage(tabKey, text);
-    };
+    }, [tabKey, onUpdateUserMessage]);
 
     // help cpu usage
     const debouncedUpdateRef = useRef<ReturnType<typeof debounce>>();
@@ -61,7 +62,8 @@ const ChatInput: React.FC = () => {
         return debouncedUpdateRef.current;
     }, [tabKey, onUpdateAIMessage]);
 
-    const onSend = async () => {
+    // Memoize the send handler
+    const onSend = useCallback(async () => {
         if (isSending || isEmpty(userMessage)) {
             return;
         }
@@ -87,7 +89,31 @@ const ChatInput: React.FC = () => {
         } finally {
             setIsSending(false);
         }
-    };
+    }, [isSending, userMessage, tabKey, onPushUserMessage, onInitAIMessage, getDebouncedUpdate, onResetUserMessage]);
+
+    // Memoize the clear messages handler
+    const handleClearMessages = useCallback(() => {
+        onClearMessages(tabKey);
+    }, [tabKey, onClearMessages]);
+
+    // Memoize the key press handler
+    const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+        console.log("handleKeyPress", e.key);
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            onSend();
+        }
+    }, [onSend]);
+
+    // Memoize the disabled state
+    const isDisabled = useMemo(() => 
+        isEmpty(userMessage) || isSending, [userMessage, isSending]
+    );
+
+    // Memoize the clear button disabled state
+    const isClearDisabled = useMemo(() => 
+        !userMessage.trim() || isSending, [userMessage, isSending]
+    );
 
     useEffect(() => {
         return () => {
@@ -96,14 +122,6 @@ const ChatInput: React.FC = () => {
             }
         };
     }, []);
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        console.log("handleKeyPress", e.key);
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            onSend();
-        }
-    };
 
     return (
         <div className="chat-input-container">
@@ -132,8 +150,8 @@ const ChatInput: React.FC = () => {
                     <Button
                         type="text"
                         icon={<DeleteOutlined />}
-                        onClick={() => onClearMessages(tabKey)}
-                        disabled={!userMessage.trim() || isSending}
+                        onClick={handleClearMessages}
+                        disabled={isClearDisabled}
                         className="clear-btn"
                         title="Clear all messages"
                     />
@@ -141,7 +159,7 @@ const ChatInput: React.FC = () => {
                         type="primary"
                         icon={<SendOutlined />}
                         onClick={onSend}
-                        disabled={isEmpty(userMessage) || isSending}
+                        disabled={isDisabled}
                         loading={isSending}
                         className="send-btn"
                         title="Send message"
@@ -150,6 +168,8 @@ const ChatInput: React.FC = () => {
             </div>
         </div>
     );
-};
+});
+
+ChatInput.displayName = 'ChatInput';
 
 export default ChatInput; 
