@@ -15,12 +15,15 @@ import './style.less';
 const { Text } = Typography;
 
 interface MessageItemProps {
+    isStreaming: boolean;
     message: Message;
     onCopy: (content: string) => void;
     onHeightChange?: () => void; // ⭐ 新增回调
 }
 
-const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, onHeightChange }) => {
+const MessageItem: React.FC<MessageItemProps> = React.memo((
+    { isStreaming, message, onCopy, onHeightChange
+    }) => {
     const [thinkingEmoji, setThinkingEmoji] = useState('🤔');
 
     const isThinking = message.content === '🤔 Thinking...';
@@ -127,6 +130,7 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, o
                         >
                             <Text style={{ whiteSpace: 'pre-wrap' }}>{message.content}</Text>
                         </Card>
+                        {/* user message footer */}
                         <div className="message-footer">
                             <Button
                                 type="text"
@@ -136,7 +140,7 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, o
                                 className="copy-btn"
                                 title="Copy message"
                             />
-                            <Text type="secondary" style={{ fontSize: 12, marginTop: 4, textAlign: 'right' }}>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
                                 {formattedTime}
                             </Text>
                         </div>
@@ -193,6 +197,7 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, o
                             <Text style={{ whiteSpace: 'pre-wrap' }}>{message.content}</Text>
                         )}
                     </Card>
+                    {/* ai message footer */}
                     <div className="message-footer">
                         <Button
                             type="text"
@@ -202,7 +207,8 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, o
                             className="copy-btn"
                             title="Copy message"
                         />
-                        <Text type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
+                        {isStreaming && <div className="generating-indicator">generating</div>}
+                        <Text type="secondary" style={{ fontSize: 12 }}>
                             {formattedTime}
                         </Text>
                     </div>

@@ -42,9 +42,10 @@ const ChatInput: React.FC = React.memo(() => {
         onClearMessages,
         onPushUserMessage,
         onInitAIMessage,
-        onUpdateAIMessage
+        onUpdateAIMessage,
+        onSetStreaming
     } = store;
-    const { userMessage } = mapChat(tabKey);
+    const { userMessage, isStreaming } = mapChat(tabKey);
 
     // Memoize the mentions change handler
     const handleMentionsChange = useCallback((text: string) => {
@@ -67,7 +68,6 @@ const ChatInput: React.FC = React.memo(() => {
         if (isSending || isEmpty(userMessage)) {
             return;
         }
-
         setIsSending(true);
         try {
             await onPushUserMessage(tabKey, userMessage);
@@ -75,11 +75,16 @@ const ChatInput: React.FC = React.memo(() => {
 
             const chunks: string[] = [];
             const debouncedUpdate = getDebouncedUpdate();
-            const chatUtil = await createDyncmicChat((respChunk) => {
-                chunks.push(respChunk);
-                // O(n)
-                debouncedUpdate(chunks.join(''));
-            });
+            const chatUtil = await createDyncmicChat(
+                (respChunk) => {
+                    chunks.push(respChunk);
+                    debouncedUpdate(chunks.join(''));
+                },
+                (_) => {
+                    onSetStreaming(tabKey, false);
+                }
+            );
+            onSetStreaming(tabKey, true);
             try {
                 chatUtil.sendMessage(userMessage);
             } finally {
@@ -106,12 +111,12 @@ const ChatInput: React.FC = React.memo(() => {
     }, [onSend]);
 
     // Memoize the disabled state
-    const isDisabled = useMemo(() => 
+    const isDisabled = useMemo(() =>
         isEmpty(userMessage) || isSending, [userMessage, isSending]
     );
 
     // Memoize the clear button disabled state
-    const isClearDisabled = useMemo(() => 
+    const isClearDisabled = useMemo(() =>
         !userMessage.trim() || isSending, [userMessage, isSending]
     );
 

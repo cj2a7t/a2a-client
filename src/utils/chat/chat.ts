@@ -14,17 +14,20 @@ export class ChatUtil {
 
     private forceLLM: boolean;
     private onChunk: (chunk: string) => void;
+    private onComplete?: (chunk: string) => void;
 
     private a2aServers: SettingA2AServer[];
 
     constructor(
         onChunk: (chunk: string) => void,
+        onComplete?: (chunk: string) => void,
         forceLLM: boolean = true,
         a2aServers: SettingA2AServer[] = []
     ) {
         this.onChunk = onChunk;
         this.forceLLM = forceLLM;
         this.a2aServers = a2aServers;
+        this.onComplete = onComplete;
     }
 
     async sendMessage(userPrompt: string) {
@@ -41,7 +44,7 @@ export class ChatUtil {
             // direct call llm, unuse a2a function
             if (this.forceLLM) {
                 // call llm
-                await this.callLLM(model.apiKey, "", userPrompt, true, this.onChunk);
+                await this.callLLM(model.apiKey, "", userPrompt, true, this.onChunk, this.onComplete);
                 return;
             }
 
@@ -81,6 +84,9 @@ export class ChatUtil {
                 (fullContent) => {
                     finalResponse = fullContent;
                     this.onChunk("\n ``` \n")
+                    if (this.onComplete) {
+                        this.onComplete(fullContent);
+                    }
                 }
             );
             const modelResponseMap = parseToMap(finalResponse);
@@ -209,17 +215,17 @@ export class ChatUtil {
     }
 }
 
-export const createLLMChat = (onChunk: (chunk: string) => void) => {
-    return new ChatUtil(onChunk);
+export const createLLMChat = (onChunk: (chunk: string) => void, onComplete?: (chunk: string) => void) => {
+    return new ChatUtil(onChunk, onComplete);
 }
 
-export const createDyncmicChat = async (onChunk: (chunk: string) => void) => {
+export const createDyncmicChat = async (onChunk: (chunk: string) => void, onComplete?: (chunk: string) => void) => {
     const a2aServers = await getEnabledSettingA2AServers();
     console.log("createDyncmicChat[a2aServers]: ", toPrettyJsonString(a2aServers));
     if (a2aServers.length === 0) {
-        return createLLMChat(onChunk);
+        return createLLMChat(onChunk, onComplete);
     }
-    return new ChatUtil(onChunk, false, a2aServers);
+    return new ChatUtil(onChunk, onComplete, false, a2aServers);
 }
 
 

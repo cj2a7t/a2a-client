@@ -13,7 +13,7 @@ const MessageList: React.FC = React.memo(() => {
     const tabKey = useTabKey();
     const [store] = useFlatInject("chat");
     const { mapChat } = store;
-    const { messageList } = mapChat(tabKey);
+    const { messageList, isStreaming } = mapChat(tabKey);
 
     const virtuosoRef = useRef<VirtuosoHandle>(null);
 
@@ -54,6 +54,7 @@ const MessageList: React.FC = React.memo(() => {
         const message = messageList[index];
         return (
             <MessageItem
+                isStreaming={isStreaming}
                 key={message.id}
                 message={message}
                 onCopy={handleCopyMessage}

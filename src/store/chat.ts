@@ -8,6 +8,7 @@ const getDefaultTabData = () => ({
     userMessage: "",
     lastAIMessageId: "",
     isTabLoading: false,
+    isStreaming: false,
 });
 
 const initState = {
@@ -18,6 +19,7 @@ const initState = {
         userMessage: string;
         lastAIMessageId: string;
         isTabLoading: boolean;
+        isStreaming: boolean;
     }>,
 };
 
@@ -116,7 +118,16 @@ const actions = NaturFactory.actionsCreator(state)({
             console.log("onSetTabLoading ==>>", realKey, isTabLoading);
             s.tabChat.tabData[realKey].isTabLoading = isTabLoading;
         });
-    }
+    },
+    onSetStreaming: (tabKey: TabKeyType, isStreaming: boolean) => async (api) => {
+        const realKey = tabKey ?? "default";
+        api.setState((s: State) => {
+            if (!s.tabChat.tabData[realKey]) {
+                s.tabChat.tabData[realKey] = getDefaultTabData();
+            }
+            s.tabChat.tabData[realKey].isStreaming = isStreaming;
+        });
+    },
 });
 
 export const maps = {
@@ -138,6 +149,7 @@ export const maps = {
                     userMessage: res.userMessage || "",
                     lastAIMessageId: res.lastAIMessageId || "",
                     isTabLoading: res.isTabLoading || false,
+                    isStreaming: res.isStreaming || false,
                 };
             };
         }
