@@ -75,7 +75,6 @@ const actions = NaturFactory.actionsCreator(state)({
                 s.tabChat.tabData[realKey] = getDefaultTabData();
             }
             const messageId = s.tabChat.tabData[realKey].lastAIMessageId;
-            console.log("lastAIMessageId ==>>", messageId);
             const message = s.tabChat.tabData[realKey].messageList.find(m => m.id === messageId);
             if (message) {
                 message.content = chunk;
@@ -115,7 +114,6 @@ const actions = NaturFactory.actionsCreator(state)({
             if (!s.tabChat.tabData[realKey]) {
                 s.tabChat.tabData[realKey] = getDefaultTabData();
             }
-            console.log("onSetTabLoading ==>>", realKey, isTabLoading);
             s.tabChat.tabData[realKey].isTabLoading = isTabLoading;
         });
     },

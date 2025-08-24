@@ -18,7 +18,7 @@ interface MessageItemProps {
     isStreaming: boolean;
     message: Message;
     onCopy: (content: string) => void;
-    onHeightChange?: () => void; // ⭐ 新增回调
+    onHeightChange?: () => void;
 }
 
 const MessageItem: React.FC<MessageItemProps> = React.memo((
@@ -28,7 +28,6 @@ const MessageItem: React.FC<MessageItemProps> = React.memo((
 
     const isThinking = message.content === '🤔 Thinking...';
 
-    // 思考动画
     useEffect(() => {
         if (isThinking) {
             const emojis = ['🤔', '🤨', '🧐', '🤓', '🤯', '💭', '💡', '🎯', '🔍', '⚡'];

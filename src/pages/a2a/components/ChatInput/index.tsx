@@ -54,12 +54,15 @@ const ChatInput: React.FC = React.memo(() => {
 
     // help cpu usage
     const debouncedUpdateRef = useRef<ReturnType<typeof debounce>>();
-    const getDebouncedUpdate = useCallback(() => {
-        if (!debouncedUpdateRef.current) {
-            debouncedUpdateRef.current = debounce((content: string) => {
-                onUpdateAIMessage(tabKey, content);
-            }, 100);
+    
+    // Create debounced update function that captures current tabKey
+    const createDebouncedUpdate = useCallback(() => {
+        if (debouncedUpdateRef.current) {
+            debouncedUpdateRef.current.cancel();
         }
+        debouncedUpdateRef.current = debounce((content: string) => {
+            onUpdateAIMessage(tabKey, content);
+        }, 100);
         return debouncedUpdateRef.current;
     }, [tabKey, onUpdateAIMessage]);
 
@@ -68,13 +71,14 @@ const ChatInput: React.FC = React.memo(() => {
         if (isSending || isEmpty(userMessage)) {
             return;
         }
+        console.log("----->tabKey", tabKey);
         setIsSending(true);
         try {
             await onPushUserMessage(tabKey, userMessage);
             await onInitAIMessage(tabKey, "🤔 Thinking...");
 
             const chunks: string[] = [];
-            const debouncedUpdate = getDebouncedUpdate();
+            const debouncedUpdate = createDebouncedUpdate();
             const chatUtil = await createDyncmicChat(
                 (respChunk) => {
                     chunks.push(respChunk);
@@ -94,7 +98,7 @@ const ChatInput: React.FC = React.memo(() => {
         } finally {
             setIsSending(false);
         }
-    }, [isSending, userMessage, tabKey, onPushUserMessage, onInitAIMessage, getDebouncedUpdate, onResetUserMessage]);
+    }, [isSending, userMessage, tabKey, onPushUserMessage, onInitAIMessage, createDebouncedUpdate, onResetUserMessage]);
 
     // Memoize the clear messages handler
     const handleClearMessages = useCallback(() => {
@@ -165,7 +169,7 @@ const ChatInput: React.FC = React.memo(() => {
                         icon={<SendOutlined />}
                         onClick={onSend}
                         disabled={isDisabled}
-                        loading={isSending}
+                        loading={isSending || isStreaming}
                         className="send-btn"
                         title="Send message"
                     />

@@ -20,7 +20,7 @@ interface HeaderTabRef {
 }
 
 const MIN_TABS = 1;
-const MAX_TABS = 1000; // Remove 20 tab limit, set to 1000
+const MAX_TABS = 1000;
 const MIN_TAB_WIDTH = 60; // Minimum tab width
 const PREFERRED_TAB_WIDTH = 120; // Preferred tab width
 const MAX_TAB_WIDTH = 160; // Maximum tab width
@@ -42,7 +42,7 @@ const HeaderTab = React.forwardRef<HeaderTabRef>((props, ref) => {
         if (!containerRef.current) return PREFERRED_TAB_WIDTH;
 
         const containerWidth = containerRef.current.offsetWidth;
-        const availableWidth = containerWidth - 120; // 减少预留空间，给更多tab空间
+        const availableWidth = containerWidth - 120;
         const totalTabs = items.length;
 
         if (totalTabs === 0) return PREFERRED_TAB_WIDTH;

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { List, Button, Modal, Form, Input, Typography, message, Layout, Spin, Table, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, LinkOutlined, CloudServerOutlined } from '@ant-design/icons';
-import { useFlatInject, useHttp } from '@/utils/hooks';
-import { Editor } from '@monaco-editor/react';
-import { initMonacoTheme } from '@/utils/monaco';
-import './style.less';
 import { SettingA2AServer } from '@/types/a2a';
+import { useFlatInject, useHttp } from '@/utils/hooks';
+import { initMonacoTheme } from '@/utils/monaco';
+import { CloudServerOutlined, DeleteOutlined, EditOutlined, LinkOutlined, PlusOutlined } from '@ant-design/icons';
+import { Editor } from '@monaco-editor/react';
+import { Button, Form, Input, Layout, Modal, Popconfirm, Spin, Table, Typography, message } from 'antd';
+import React, { useState } from 'react';
+import './style.less';
 
 const { Text, Title } = Typography;
 const { Header, Content } = Layout;

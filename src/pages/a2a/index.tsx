@@ -2,7 +2,6 @@ import { LoadingSpinner } from '@/components';
 import { useFlatInject } from '@/utils/hooks';
 import { useTabKey } from '@/utils/tabkey';
 import React, { useMemo } from 'react';
-import KeepAlive from 'react-activation';
 import { ChatInput, MessageList } from './components';
 import "./style.less";
 
@@ -25,13 +24,11 @@ const A2APage: React.FC = React.memo(() => {
     }, [isTabLoading]);
 
     return (
-        <KeepAlive>
-            <div className="a2a-container">
-                {loadingOverlay}
-                <MessageList />
-                <ChatInput />
-            </div>
-        </KeepAlive>
+        <div className="a2a-container">
+            {loadingOverlay}
+            <MessageList />
+            <ChatInput />
+        </div>
     );
 });
 

@@ -5,8 +5,8 @@ import { SettingA2AServer } from "@/types/a2a";
 import delay from "delay";
 import { isEmpty } from "lodash";
 import { createA2AClient } from "../a2aClient";
-import { parseToMap, toPrettyJsonString } from "../json";
-import { toExtractJsonString, toJsonStringWithPrefix, toXmlStringWithPrefix } from "../markdown";
+import { parseToMap } from "../json";
+import { toJsonStringWithPrefix, toXmlStringWithPrefix } from "../markdown";
 import { tauriEventListener } from "../TauriEventListener";
 import { XmlUtils } from "../xml";
 
@@ -45,6 +45,7 @@ export class ChatUtil {
             if (this.forceLLM) {
                 // call llm
                 await this.callLLM(model.apiKey, "", userPrompt, true, this.onChunk, this.onComplete);
+                this.onComplete?.("finished");
                 return;
             }
 
@@ -57,14 +58,18 @@ export class ChatUtil {
                     userprompt: userPrompt,
                     message: "Use the @A2A command to get started. If you’d prefer not to use A2A, you can disable A2A Servers anytime."
                 };
-                this.onChunk(toJsonStringWithPrefix("Send message result:", response));
+                const resultText = toJsonStringWithPrefix("Send message result:", response);
+                await this.streamText(resultText, this.onChunk);
+                this.onComplete?.("finished");
                 return;
             }
 
             // build system prompt
             const a2aServers = this.a2aServers;
             const systemPrompts = XmlUtils.buildA2AServersXml(a2aServers);
-            this.onChunk(toXmlStringWithPrefix("#### System prompt:", systemPrompts))
+            const systemPromptText = toXmlStringWithPrefix("#### System prompt:", systemPrompts);
+            await this.streamText(systemPromptText, this.onChunk);
+
 
             // call LLM with the generated system prompt
             let chunkIndex = 0;
@@ -84,9 +89,6 @@ export class ChatUtil {
                 (fullContent) => {
                     finalResponse = fullContent;
                     this.onChunk("\n ``` \n")
-                    if (this.onComplete) {
-                        this.onComplete(fullContent);
-                    }
                 }
             );
             const modelResponseMap = parseToMap(finalResponse);
@@ -95,11 +97,15 @@ export class ChatUtil {
             // send A2A task
             const a2aAgentUrl = String(modelResponseMap.agentUrl || '');
             const a2aResponseTask = await this.sendTaskToAgent(a2aAgentUrl, modelResponseMap.userPrompts, modelResponseMap.skillId);
-            this.onChunk(toJsonStringWithPrefix("#### A2A task response: \n", a2aResponseTask));
+            const a2aResponseTaskText = toJsonStringWithPrefix("#### A2A task response: \n", a2aResponseTask);
+            await this.streamText(a2aResponseTaskText, this.onChunk);
+            this.onComplete?.("finished");
         } catch (error) {
             console.error("Failed to send message:", error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            this.onChunk("#### Error: \n" + toExtractJsonString(errorMessage));
+            const errorText = toJsonStringWithPrefix("#### Error: \n", errorMessage);
+            await this.streamText(errorText, this.onChunk);
+            this.onComplete?.("finished");
         }
     }
 
@@ -197,6 +203,25 @@ export class ChatUtil {
         }
     }
 
+    private streamText = async (
+        text: string,
+        onChunk: (chunk: string) => void,
+    ) => {
+        let i = 0;
+        while (i < text.length) {
+            const randomChunkSize = Math.floor(Math.random() * 6) + 5;
+            const chunk = text.slice(i, i + randomChunkSize);
+            onChunk(chunk);
+            if (i + randomChunkSize < text.length) {
+                const randomDelay = Math.floor(Math.random() * 101) + 100;
+                await delay(randomDelay);
+            }
+            i += randomChunkSize;
+        }
+        await delay(200);
+        onChunk("\r");
+    };
+
     private async sendTaskToAgent(agentUrl: string, userPrompt: string, headerSkillId: string): Promise<any> {
         try {
             // create new client instance for specified Agent URL
@@ -221,7 +246,6 @@ export const createLLMChat = (onChunk: (chunk: string) => void, onComplete?: (ch
 
 export const createDyncmicChat = async (onChunk: (chunk: string) => void, onComplete?: (chunk: string) => void) => {
     const a2aServers = await getEnabledSettingA2AServers();
-    console.log("createDyncmicChat[a2aServers]: ", toPrettyJsonString(a2aServers));
     if (a2aServers.length === 0) {
         return createLLMChat(onChunk, onComplete);
     }

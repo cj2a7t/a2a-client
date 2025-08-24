@@ -1,5 +1,5 @@
 import { useFlatInject as useFlatInjectOriginal } from "@/utils/hooks";
-import { SettingOutlined, StarFilled } from "@ant-design/icons";
+import { SettingOutlined } from "@ant-design/icons";
 import { Button, Layout, Tooltip } from "antd";
 import { useRef } from "react";
 import { Outlet, useNavigate } from "umi";
@@ -28,41 +28,6 @@ const LayoutFC = () => {
         nav(`/settings?tabKey=${newKey}`);
     };
 
-    const renderItem = (name: string, url: string, isStarred?: boolean) => ({
-        value: url,
-        label: (
-            <div style={{ fontSize: 11, lineHeight: 1.4 }}>
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                    }}
-                >
-                    <span>{name}</span>
-                    {isStarred && <StarFilled style={{ color: "#fadb14" }} />}
-                </div>
-                <div style={{ color: "#888", fontSize: 11 }}>{url}</div>
-            </div>
-        ),
-    });
-
-    const renderEmptyItem = (label: string) => ({
-        value: "",
-        label: (
-            <div
-                style={{
-                    fontSize: 11,
-                    color: "#999",
-                    fontStyle: "italic",
-                }}
-            >
-                {label}
-            </div>
-        ),
-        disabled: true,
-    });
-
 
 
     return (
@@ -78,7 +43,7 @@ const LayoutFC = () => {
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
-                    padding: "0 16px 0 70px", // 左边70px，右边16px
+                    padding: "0 16px 0 70px",
                 }}
                 className="tauri-drag"
             >
