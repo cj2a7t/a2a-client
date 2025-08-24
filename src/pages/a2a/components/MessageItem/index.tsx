@@ -1,7 +1,9 @@
+import userAvatar from '@/assets/cj.jpeg';
+import aiAvatar from '@/assets/rust_a2a.png';
 import { Message } from '@/types/a2a';
 import { formatTime } from '@/utils/date';
 import { shouldRenderAsMarkdown } from '@/utils/markdown';
-import { CopyOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
+import { CopyOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Flex, Typography } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -140,9 +142,8 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, o
                         </div>
                     </div>
                     <Avatar
-                        icon={<UserOutlined />}
+                        src={userAvatar}
                         style={{
-                            backgroundColor: '#1890ff',
                             flexShrink: 0,
                         }}
                     />
@@ -155,10 +156,10 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, onCopy, o
         <div className="message-item ai-message">
             <Flex align="flex-start" gap={12}>
                 <Avatar
-                    icon={<RobotOutlined />}
+                    src={aiAvatar}
                     style={{
-                        backgroundColor: '#52c41a',
                         flexShrink: 0,
+                        background: 'linear-gradient(135deg, #b3d9ff 0%, #80bfff 100%)',
                     }}
                 />
                 <div className="message-content">

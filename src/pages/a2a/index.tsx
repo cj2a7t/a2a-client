@@ -1,6 +1,8 @@
+import { LoadingSpinner } from '@/components';
 import { useFlatInject } from '@/utils/hooks';
 import { useTabKey } from '@/utils/tabkey';
 import React, { useMemo } from 'react';
+import KeepAlive from 'react-activation';
 import { ChatInput, MessageList } from './components';
 import "./style.less";
 
@@ -14,23 +16,22 @@ const A2APage: React.FC = React.memo(() => {
     // Memoize the loading overlay to prevent unnecessary re-renders
     const loadingOverlay = useMemo(() => {
         if (!isTabLoading) return null;
-        
+
         return (
             <div className="tab-loading-overlay">
-                <div className="loading-spinner">
-                    <div className="spinner"></div>
-                    <div className="loading-text">Loading...</div>
-                </div>
+                <LoadingSpinner size="medium" />
             </div>
         );
     }, [isTabLoading]);
 
     return (
-        <div className="a2a-container">
-            {loadingOverlay}
-            <MessageList />
-            <ChatInput />
-        </div>
+        <KeepAlive>
+            <div className="a2a-container">
+                {loadingOverlay}
+                <MessageList />
+                <ChatInput />
+            </div>
+        </KeepAlive>
     );
 });
 
